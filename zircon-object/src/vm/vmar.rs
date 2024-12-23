@@ -232,7 +232,9 @@ impl VmAddressRegion {
             }
         }
         // TODO: Fix map_range bugs and remove this line
-        let map_range = map_range || vmo.name() != "";
+        // let map_range = map_range || vmo.name() != "";
+        // GRT TODO: 在运行fuchsia时会出现因为vmo.name为空导致的bug, 后续需要修复此BUG
+        let map_range = map_range || vmo.name() != "" || len != 0;
         let mapping = VmMapping::new(
             addr,
             len,

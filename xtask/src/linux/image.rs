@@ -21,13 +21,26 @@ impl super::LinuxRootfs {
             Tar::xf(&aarch64_tar, Some(&fw_dir)).invoke();
 
             let boot_dir = inner.join("disk").join("EFI").join("Boot");
-            dir::clear(&boot_dir).unwrap();
-            fs::copy(
-                fw_dir.join("aarch64_uefi.efi"),
-                boot_dir.join("bootaa64.efi"),
-            )
-            .unwrap();
-            fs::copy(fw_dir.join("Boot.json"), boot_dir.join("Boot.json")).unwrap();
+            // 检查 boot_dir 是否存在，如果存在则跳过复制操作
+            if !boot_dir.exists() {
+            // 如果 boot_dir 不存在，则清理并创建,并复制原版镜像
+                dir::clear(&boot_dir).unwrap();
+                fs::copy(
+                    fw_dir.join("aarch64_uefi.efi"),
+                    boot_dir.join("bootaa64.efi"),
+                )
+                .unwrap();
+                fs::copy(fw_dir.join("Boot.json"), boot_dir.join("Boot.json")).unwrap();
+            } else {
+                println!("Boot directory already exists, skipping clear and copy.");
+            }
+            // dir::clear(&boot_dir).unwrap();
+            // fs::copy(
+            //     fw_dir.join("aarch64_uefi.efi"),
+            //     boot_dir.join("bootaa64.efi"),
+            // )
+            // .unwrap();
+            // fs::copy(fw_dir.join("Boot.json"), boot_dir.join("Boot.json")).unwrap();
         }
         // 生成镜像
         fuse(self.path(), &image);

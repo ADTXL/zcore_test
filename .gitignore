@@ -9,6 +9,7 @@
 /rootfs
 # for aarch64 only
 /zCore/disk
+/tools/docker/user_home
 
 .DS_Store
 __pycache__

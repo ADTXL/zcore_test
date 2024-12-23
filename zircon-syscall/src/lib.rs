@@ -255,6 +255,7 @@ impl Syscall<'_> {
             Sys::NANOSLEEP => self.sys_nanosleep(a0.into()).await,
             Sys::CLOCK_CREATE => self.sys_clock_create(a0 as _, a1.into(), a2.into()),
             Sys::CLOCK_GET => self.sys_clock_get(a0 as _, a1.into()),
+            Sys::CLOCK_GET_MONOTONIC => self.sys_clock_get_monotonic(),
             Sys::CLOCK_READ => self.sys_clock_read(a0 as _, a1.into()),
             Sys::CLOCK_ADJUST => self.sys_clock_adjust(a0 as _, a1 as _, a2 as _),
             Sys::CLOCK_UPDATE => self.sys_clock_update(a0 as _, a1 as _, a2.into()),
@@ -276,7 +277,7 @@ impl Syscall<'_> {
             Sys::TIMER_SET => self.sys_timer_set(a0 as _, a1.into(), a2 as _),
             Sys::TIMER_CANCEL => self.sys_timer_cancel(a0 as _),
             Sys::DEBUG_READ => {
-                self.sys_debug_read(a0 as _, a1.into(), a2 as _, a3.into())
+                self.sys_debug_read(a0 as _, a1.into(), a2.into())
                     .await
             }
             Sys::TASK_CREATE_EXCEPTION_CHANNEL => {

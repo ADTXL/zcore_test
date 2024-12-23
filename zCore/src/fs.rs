@@ -57,6 +57,12 @@ pub(crate) fn init_ram_disk() -> Option<&'static mut [u8]> {
             fn _user_img_start();
             fn _user_img_end();
         }
+        // 修改！定位嵌入的zbi,虽然这里看起来只是报调试信息，但如果不加这个地方就会报页面错误，未解之迷
+        {
+            let start = _user_img_start as usize;
+            let end = _user_img_end as usize;
+            warn!("_user_img_start: 0x{:x}, _user_img_end: 0x{:x}", start, end);
+        }
         Some(unsafe {
             core::slice::from_raw_parts_mut(
                 _user_img_start as *mut u8,

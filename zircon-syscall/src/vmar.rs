@@ -135,6 +135,23 @@ impl Syscall<'_> {
             options.contains(VmOptions::MAP_RANGE)
         };
 
+ 
+        // 同时被 VMO 和 VMAR 允许的权限
+        let can_read = vmo_rights.contains(Rights::READ) && vmar_rights.contains(Rights::READ);
+        let can_write = vmo_rights.contains(Rights::WRITE) && vmar_rights.contains(Rights::WRITE);
+        let can_exec = vmo_rights.contains(Rights::EXECUTE) && vmar_rights.contains(Rights::EXECUTE);
+
+        // 检查请求的映射保护是否被允许
+        if options.contains(VmOptions::PERM_READ) && !can_read {
+            return Err(ZxError::ACCESS_DENIED);
+        }
+        if options.contains(VmOptions::PERM_WRITE) && !can_write {
+            return Err(ZxError::ACCESS_DENIED);
+        }
+        if options.contains(VmOptions::PERM_EXECUTE) && !can_exec {
+            return Err(ZxError::ACCESS_DENIED);
+        }  
+
         info!(
             "mmuflags: {:?}, is_specific {:?}, overwrite {:?}, map_range {:?}",
             mapping_flags, is_specific, overwrite, map_range

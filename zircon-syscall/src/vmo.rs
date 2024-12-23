@@ -119,57 +119,54 @@ impl Syscall<'_> {
         size: usize,
         mut out: UserOutPtr<HandleValue>,
     ) -> ZxResult {
-        let mut options = VmoCloneFlags::from_bits(options).ok_or(ZxError::INVALID_ARGS)?;
+        let options = VmoCloneFlags::from_bits(options).ok_or(ZxError::INVALID_ARGS)?;
         info!(
             "vmo_create_child: handle={:#x}, options={:?}, offset={:#x}, size={:#x}",
             handle_value, options, offset, size
         );
-        // check options given
-        let no_write = options.contains(VmoCloneFlags::NO_WRITE);
-        if no_write {
-            options.remove(VmoCloneFlags::NO_WRITE);
-        }
 
-        let resizable = options.contains(VmoCloneFlags::RESIZABLE);
         let child_size = roundup_pages(size);
+        let resizable = options.contains(VmoCloneFlags::RESIZABLE);
         if child_size < size {
             return Err(ZxError::OUT_OF_RANGE);
         }
-        info!("size of child vmo: {:#x}", child_size);
-
+        info!("size of child vmo: {:#x}, resizable: {}", child_size, resizable);
+        // 获取当前进程
         let proc = self.thread.proc();
+        
+        // 获取父 VMO 对象及其权限
         let (vmo, parent_rights) = proc.get_object_and_rights::<VmObject>(handle_value)?;
         if !parent_rights.contains(Rights::DUPLICATE | Rights::READ) {
             return Err(ZxError::ACCESS_DENIED);
         }
+        // 对options进行处理
         let child_vmo = if options.contains(VmoCloneFlags::SLICE) {
             if options != VmoCloneFlags::SLICE {
-                Err(ZxError::INVALID_ARGS)
+                return Err(ZxError::INVALID_ARGS);
             } else {
                 vmo.create_slice(offset, child_size)
             }
         } else {
-            // TODO: ZX_VMO_CHILD_SNAPSHOT
-            if !options.contains(VmoCloneFlags::SNAPSHOT_AT_LEAST_ON_WRITE) {
-                return Err(ZxError::NOT_SUPPORTED);
-            }
             vmo.create_child(resizable, offset as usize, child_size)
         }?;
-        // generate rights
+
+
+        // 设置新 handle 的权限
         let mut child_rights = parent_rights;
         child_rights.insert(Rights::GET_PROPERTY | Rights::SET_PROPERTY);
-        if no_write {
-            child_rights.remove(Rights::WRITE);
-        } else if options.contains(VmoCloneFlags::SNAPSHOT)
-            || options.contains(VmoCloneFlags::SNAPSHOT_AT_LEAST_ON_WRITE)
-        {
+
+        // 处理写时复制选项
+        if options.contains(VmoCloneFlags::COPY_ON_WRITE) || options.contains(VmoCloneFlags::COPY_ON_WRITE2) {
             child_rights.remove(Rights::EXECUTE);
             child_rights.insert(Rights::WRITE);
-        };
+        }
+
         info!(
             "parent_rights: {:?} child_rights: {:?}",
             parent_rights, child_rights
         );
+
+        // 创建新 handle
         out.write(proc.add_handle(Handle::new(child_vmo, child_rights)))?;
         Ok(())
     }
@@ -309,11 +306,10 @@ impl Syscall<'_> {
 bitflags! {
     struct VmoCloneFlags: u32 {
         #[allow(clippy::identity_op)]
-        const SNAPSHOT                   = 1 << 0;
-        const RESIZABLE                  = 1 << 2;
-        const SLICE                      = 1 << 3;
-        const SNAPSHOT_AT_LEAST_ON_WRITE = 1 << 4;
-        const NO_WRITE                   = 1 << 5;
+        const COPY_ON_WRITE                 = 1 << 0;
+        const RESIZABLE                     = 1 << 2;
+        const COPY_ON_WRITE2                = 1 << 3;
+        const SLICE                         = 1 << 4;
     }
 }
 

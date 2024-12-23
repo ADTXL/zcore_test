@@ -2,6 +2,18 @@
 //!
 //! Reference: <https://fuchsia.googlesource.com/fuchsia/+/3c234f79f71/zircon/kernel/lib/userabi/userboot.cc>
 
+
+/*
+const K_FIRSTVDSO: usize = 5;
+
+const K_USERBOOTDECOMPRESSOR: usize = 8;
+const K_CRASHLOG: usize = 9;
+const K_COUNTER_NAMES: usize = 10;
+const K_COUNTERS: usize = 11;
+const K_FISTINSTRUMENTATIONDATA: usize = 12;
+const K_HANDLECOUNT: usize = 13;
+*/
+
 use alloc::{boxed::Box, sync::Arc, vec::Vec};
 use core::{future::Future, pin::Pin};
 
@@ -26,11 +38,15 @@ const K_ROOTRESOURCE: usize = 3;
 // Essential VMO handles
 const K_ZBI: usize = 4;
 const K_FIRSTVDSO: usize = 5;
-const K_CRASHLOG: usize = 8;
-const K_COUNTER_NAMES: usize = 9;
-const K_COUNTERS: usize = 10;
-const K_FISTINSTRUMENTATIONDATA: usize = 11;
-const K_HANDLECOUNT: usize = 15;
+const K_USERBOOT_DECOMPRESSOR: usize = 8;
+#[allow(dead_code)]
+const K_FIRSTKERNELFILE: usize = K_USERBOOT_DECOMPRESSOR;
+const K_CRASHLOG: usize = 9;
+const K_COUNTER_NAMES: usize = 10;
+const K_COUNTERS: usize = 11;
+const K_FISTINSTRUMENTATIONDATA: usize = 12;
+#[allow(dead_code)]
+const K_HANDLECOUNT: usize = K_FISTINSTRUMENTATIONDATA + 1;
 
 macro_rules! boot_library {
     ($name: expr) => {{
@@ -91,8 +107,11 @@ fn kcounter_vmos() -> (Arc<VmObject>, Arc<VmObject>) {
 
 /// Run Zircon `userboot` process from the prebuilt path, and load the ZBI file as the bootfs.
 pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
-    let userboot = boot_library!("userboot");
+    info!("run_userboot proc，the cmdline is: {}", cmdline);
+
+    let userboot = boot_library!("libuserboot");
     let vdso = boot_library!("libzircon");
+    let decompressor = boot_library!("decompress-lz4f");
 
     let job = Job::root();
     let proc = Process::create(&job, "userboot").unwrap();
@@ -116,6 +135,7 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
         vmar.load_from_elf(&elf).unwrap();
         (vmar.addr() + elf.header.pt2.entry_point() as usize, size)
     };
+    info!("userboot entry: {:#x}, size: {:#x}", entry, userboot_size);
 
     // vdso
     let vdso_vmo = {
@@ -154,6 +174,16 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
         vmo
     };
 
+    // decompressor
+    let decompressor_vmo = {
+        let elf = ElfFile::new(decompressor).unwrap();
+        let size = elf.load_segment_size();
+        let decompressor_vmo = VmObject::new_paged(size / PAGE_SIZE);
+        decompressor_vmo.write(0, decompressor).unwrap();
+        decompressor_vmo.set_name("lib/hermetic/decompress-zstd.so");
+        decompressor_vmo
+    };
+
     // stack
     const STACK_PAGES: usize = 8;
     let stack_vmo = VmObject::new_paged(STACK_PAGES);
@@ -171,8 +201,8 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
     // channel
     let (user_channel, kernel_channel) = Channel::create();
     let handle = Handle::new(user_channel, Rights::DEFAULT_CHANNEL);
-
-    let mut handles = alloc::vec![Handle::new(proc.clone(), Rights::empty()); K_HANDLECOUNT];
+    // 创建一个长度为K_HANDLECOUNT(15)的向量，每个元素都是一个新的Handle
+    let mut handles = alloc::vec![Handle::new(proc.clone(), Rights::DUPLICATE); K_HANDLECOUNT];
     handles[K_PROC_SELF] = Handle::new(proc.clone(), Rights::DEFAULT_PROCESS);
     handles[K_VMARROOT_SELF] = Handle::new(proc.vmar(), Rights::DEFAULT_VMAR | Rights::IO);
     handles[K_ROOTJOB] = Handle::new(job, Rights::DEFAULT_JOB);
@@ -190,9 +220,16 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
     vdso_test1.set_name("vdso/test1");
     let vdso_test2 = vdso_vmo.create_child(false, 0, vdso_vmo.len()).unwrap();
     vdso_test2.set_name("vdso/test2");
+    // let vdso_embeded = vdso_vmo.create_child(false, 0, 0x1000).unwrap();
+    // vdso_embeded.set_name("embeded");  
+    // K_FIRSTVDSO: usize = 5;
     handles[K_FIRSTVDSO] = Handle::new(vdso_vmo, Rights::DEFAULT_VMO | Rights::EXECUTE);
     handles[K_FIRSTVDSO + 1] = Handle::new(vdso_test1, Rights::DEFAULT_VMO | Rights::EXECUTE);
     handles[K_FIRSTVDSO + 2] = Handle::new(vdso_test2, Rights::DEFAULT_VMO | Rights::EXECUTE);
+
+    // kUserbootDecompressor 
+    handles[K_USERBOOT_DECOMPRESSOR] = Handle::new(decompressor_vmo, Rights::DEFAULT_VMO);
+
 
     // TODO: use correct CrashLogVmo handle
     let crash_log_vmo = VmObject::new_paged(1);
@@ -209,12 +246,12 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
     instrumentation_data_vmo.set_name("UNIMPLEMENTED_VMO");
     handles[K_FISTINSTRUMENTATIONDATA] =
         Handle::new(instrumentation_data_vmo.clone(), Rights::DEFAULT_VMO);
-    handles[K_FISTINSTRUMENTATIONDATA + 1] =
-        Handle::new(instrumentation_data_vmo.clone(), Rights::DEFAULT_VMO);
-    handles[K_FISTINSTRUMENTATIONDATA + 2] =
-        Handle::new(instrumentation_data_vmo.clone(), Rights::DEFAULT_VMO);
-    handles[K_FISTINSTRUMENTATIONDATA + 3] =
-        Handle::new(instrumentation_data_vmo, Rights::DEFAULT_VMO);
+    // handles[K_FISTINSTRUMENTATIONDATA + 1] =
+    //     Handle::new(instrumentation_data_vmo.clone(), Rights::DEFAULT_VMO);
+    // handles[K_FISTINSTRUMENTATIONDATA + 2] =
+    //     Handle::new(instrumentation_data_vmo.clone(), Rights::DEFAULT_VMO);
+    // handles[K_FISTINSTRUMENTATIONDATA + 3] =
+    //     Handle::new(instrumentation_data_vmo, Rights::DEFAULT_VMO);
 
     // check: handle to root proc should be only
 
@@ -260,7 +297,7 @@ async fn run_user(thread: CurrentThread) {
         // The code will enter a magic zone from here.
         // `enter_uspace` will be executed into a wrapped library where context switching takes place.
         // The details are available in the `trapframe` crate on crates.io.
-        ctx.enter_uspace();
+        ctx.enter_uspace();  //目前zircon模式报错在此之后,以此注释测试一下push
 
         // Back from the userspace
         let time = kernel_hal::timer::timer_now().as_nanos() - tmp_time;

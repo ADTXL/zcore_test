@@ -1,6 +1,6 @@
 version: '3'
 services:
-  zcore_dev:
+  zcore_github_dev:
     build:
       context: ./build
       args:
@@ -10,8 +10,9 @@ services:
     image: zcore:${MY_IMAGE_VERSION}
     volumes:
       - "./user_home:/home/${MY_NAME}"
+      - "../../../zcore:/home/${MY_NAME}/zcore"
     ports:
-      - "9000:22"
+      - "9003:22"
     networks:
       - developer
     privileged: true 

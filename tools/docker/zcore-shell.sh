@@ -8,5 +8,5 @@ else
   echo "executing shell command in zcore: $@"
 fi
 echo ""
-ssh -X -p 9000 ${MY_NAME}@127.0.0.1 $@
+ssh -X -p 9003 ${MY_NAME}@127.0.0.1 $@
 

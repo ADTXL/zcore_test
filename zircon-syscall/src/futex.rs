@@ -83,7 +83,7 @@ impl Syscall<'_> {
     ///
     /// > Waking up zero threads is not an error condition. Passing in an unallocated address for value_ptr is not an error condition.
     pub fn sys_futex_wake(&self, value_ptr: UserInPtr<AtomicI32>, count: u32) -> ZxResult {
-        info!("futex.wake: value_ptr={:?}, count={:#x}", value_ptr, count);
+        info!("futex.wake: value_ptr={:?}, count={:#x}", value_ptr, count);      
         if value_ptr.is_null() || value_ptr.as_addr() % 4 != 0 {
             return Err(ZxError::INVALID_ARGS);
         }

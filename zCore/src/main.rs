@@ -58,7 +58,7 @@ fn primary_main(config: kernel_hal::KernelConfig) {
             utils::wait_for_exit(Some(proc))
         } else if #[cfg(feature = "zircon")] {
             let zbi = fs::zbi();
-            let proc = zcore_loader::zircon::run_userboot(zbi, &options.cmdline);
+            let proc = zcore_loader::zircon::run_userboot(zbi, &options.cmdline); //报错信息:这里会报page fault。
             utils::wait_for_exit(Some(proc))
         } else {
             panic!("One of the features `linux` or `zircon` must be specified!");

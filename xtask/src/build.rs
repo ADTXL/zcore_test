@@ -42,6 +42,10 @@ pub(crate) struct QemuArgs {
     /// Port for gdb to connect. If set, qemu will block and wait gdb to connect.
     #[clap(long)]
     gdb: Option<u16>,
+    /// Firmware to use ATF (比如说用户给了--firmware atf,则就会以atf的bl1。bin作为bios)
+    #[clap(long)]
+    firmware: Option<String>,
+
 }
 
 #[derive(Args)]
@@ -187,7 +191,7 @@ impl QemuArgs {
         .bin(None);
         // 设置 Qemu 参数
         let mut qemu = Qemu::system(arch_str);
-        qemu.args(&["-m", "2G"])
+        qemu.args(&["-m", "1G"])
             .arg("-kernel")
             .arg(&bin)
             .arg("-initrd")
@@ -196,6 +200,9 @@ impl QemuArgs {
             .args(&["-display", "none"])
             .arg("-no-reboot")
             .arg("-nographic")
+            //修改！增加-d asm 按汇编命令调试，并把执行情况保存到qemu.log中
+            // .args(&["-d", "in_asm"])
+            // .args(&["-D", "qemu_aarch64_debug.log"]) 
             .optional(&self.smp, |qemu, smp| {
                 qemu.args(&["-smp", &smp.to_string()]);
             });
@@ -208,10 +215,36 @@ impl QemuArgs {
             Arch::X86_64 => todo!(),
             Arch::Aarch64 => {
                 fs::copy(obj, INNER.join("disk").join("os")).unwrap();
-                qemu.args(&["-machine", "virt"])
-                    .args(&["-cpu", "cortex-a72"])
+                qemu.args(&["-cpu", "cortex-a72"])
+                    // .arg("-bios")
+                    // .arg(arch.target().join("firmware").join("QEMU_EFI.fd"))
+                    // 根据firmware选用bios
                     .arg("-bios")
-                    .arg(arch.target().join("firmware").join("QEMU_EFI.fd"))
+                    .arg(if let Some(ref firmware) = self.firmware {
+                        if firmware == "atf" {
+                            // 使用 ATF 固件路径
+                            PathBuf::from("./useful_tools/bl1.bin")
+                        } else {
+                            // 使用默认的 BIOS 文件路径
+                            arch.target().join("firmware").join("QEMU_EFI.fd")
+                        }
+                    } else {
+                        // 如果 firmware 没有提供，使用默认的 BIOS 文件路径
+                        arch.target().join("firmware").join("QEMU_EFI.fd")
+                    })
+                    .arg("-machine")
+                    .arg(if let Some(ref firmware) = self.firmware {
+                        if firmware == "atf" {
+                            // 使用virt,secure=on,gic_version=2
+                            "virt,secure=on,gic_version=2"                            
+                        } else {
+                            // 使用默认的virt
+                            "virt"
+                        }
+                    } else {
+                        // 如果 firmware 没有提供，也是virt
+                        "virt"
+                    })
                     .args(&["-hda", &format!("fat:rw:{}/disk", INNER.display())])
                     .args(&[
                         "-drive",
@@ -223,7 +256,13 @@ impl QemuArgs {
                     .args(&[
                         "-device",
                         "virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0",
-                    ]);
+                    ])
+                    .optional(&self.firmware, |qemu, firmware| {
+                        if firmware == "atf" {
+                            // 如果固件是 "atf"，启用 semihosting 配置
+                            qemu.args(&["-semihosting-config", "enable=on,target=native"]);
+                        }
+                    });
             }
         }
         qemu.optional(&self.gdb, |qemu, port| {

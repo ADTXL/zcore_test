@@ -1,5 +1,5 @@
 {
-	"cmdline": "LOG=warn:ROOTPROC=/bin/busybox?sh",
+	"cmdline": "LOG=ERROR:TERM=xterm-256color:console.shell=true:virtcon.disable=true",
 	"firmware_type": "QEMU",
 	"uart_base": 150994944,
 	"gic_base": 134217728,

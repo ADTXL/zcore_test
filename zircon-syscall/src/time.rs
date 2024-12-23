@@ -50,6 +50,12 @@ impl Syscall<'_> {
         }
     }
 
+    /// 获取单调递增的系统时间
+    pub fn sys_clock_get_monotonic(&self) -> ZxResult {
+        timer_now().as_nanos() as u64;
+        Ok(())
+    }
+
     /// Perform a basic read of the clock.
     pub fn sys_clock_read(&self, handle: HandleValue, mut now: UserOutPtr<u64>) -> ZxResult {
         info!("clock.read: handle={:#x?}", handle);

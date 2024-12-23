@@ -3,6 +3,9 @@ arch = "riscv64"
 
 [qemu.virt-aarch64]
 arch = "aarch64"
+link-user-img = "prebuilt/zircon/arm64/bringup_fuchsia.zbi" #添加了这一行以提供zbi,这里的修改在运行fuchsia时无效
+features =["zircon"]  # 添加这一行以启用zircon特性
+
 
 [qemu.virt-x86_64]
 arch = "x86_64"
