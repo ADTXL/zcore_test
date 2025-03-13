@@ -235,8 +235,8 @@ impl QemuArgs {
                     .arg("-machine")
                     .arg(if let Some(ref firmware) = self.firmware {
                         if firmware == "atf" {
-                            // 使用virt,secure=on,gic_version=3
-                            "virt,secure=on,gic_version=3"                            
+                            // 使用virt,secure=on,gic_version=2
+                            "virt,secure=on,gic_version=2"                            
                         } else {
                             // 使用默认的virt
                             "virt"
