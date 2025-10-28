@@ -15,7 +15,7 @@ https://docs.docker.com/docker-for-mac/install/
 $ vi .env
 
 ### Creating new container
-$ docker-compose up -d
+$ sudo docker compose up -d
 ```
 
 ## Method2: Import prebuilt docker image and start a new container
@@ -25,7 +25,7 @@ $ docker-compose up -d
 $ docker load -i xxx-<version>.tar.gz
 
 ### Creating new container
-$ docker-compose up -d
+$ sudo docker compose up -d
 ```
 
 ## Login container via SSH
