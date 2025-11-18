@@ -137,7 +137,7 @@ impl BuildConfig {
         println!("strip zcore to {}", out.display());
         dir::create_parent(&out).unwrap();
         BinUtil::objcopy()
-            .arg("--binary-architecture=riscv64")
+            .arg("--binary-architecture=riscv64")  //TODO :根据arch调整
             .arg(obj)
             .args(["--strip-all", "-O", "binary"])
             .arg(&out)
@@ -267,8 +267,10 @@ impl QemuArgs {
         }
         qemu.optional(&self.gdb, |qemu, port| {
             qemu.args(&["-S", "-gdb", &format!("tcp::{port}")]);
-        })
-        .invoke();
+        });
+        let command = qemu.info();
+        println!("QEMU Command: {}", command.to_string_lossy());
+        qemu.invoke();
     }
 }
 

@@ -34,13 +34,6 @@ impl super::LinuxRootfs {
             } else {
                 println!("Boot directory already exists, skipping clear and copy.");
             }
-            // dir::clear(&boot_dir).unwrap();
-            // fs::copy(
-            //     fw_dir.join("aarch64_uefi.efi"),
-            //     boot_dir.join("bootaa64.efi"),
-            // )
-            // .unwrap();
-            // fs::copy(fw_dir.join("Boot.json"), boot_dir.join("Boot.json")).unwrap();
         }
         // 生成镜像
         fuse(self.path(), &image);
