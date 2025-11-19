@@ -30,6 +30,9 @@ cargo update-all
 ```bash
 cargo qemu --arch aarch64
 ```
+启动准备工作流程图如下，更详细的信息可见docs（TODO）
+![](./docs/zcore_aarch64_prepare.png)
+
 
 使用下面的命令可以从ATF开始启动
 
