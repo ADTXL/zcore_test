@@ -591,12 +591,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
-name = "dtb-walker"
-version = "0.2.0-alpha.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9404d41caa1aa659f7be44d5a902e318c0672900822fe9ca41d9e38c14b52332"
-
-[[package]]
 name = "either"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1015,8 +1009,6 @@ dependencies = [
  "naive-timer",
  "nix",
  "numeric-enum-macro",
- "riscv 0.9.0",
- "sbi-rt",
  "smoltcp",
  "spin 0.9.4",
  "tempfile",
@@ -1287,16 +1279,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ff7415e9ae3fff1225851df9e0d9e4e5479f947619774677a63572e55e80eff"
 
 [[package]]
-name = "page-table"
-version = "0.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82a394e6c402fb630dbb6e33a84a342c482a603ae32b2a26d61202bfaba2b2c0"
-dependencies = [
- "cfg-if 1.0.0",
- "static_assertions",
-]
-
-[[package]]
 name = "parking"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1402,12 +1384,6 @@ checksum = "bbe448f377a7d6961e30f5955f9b8d106c3f5e449d493ee1b125c1d43c2b5179"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "r0"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd7a31eed1591dcbc95d92ad7161908e72f4677f8fabf2a32ca49b4237cbf211"
 
 [[package]]
 name = "radium"
@@ -1657,17 +1633,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "riscv"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73fc4bc7113424814738fe79755a5764e392b3d4d1bc757e6aa6f61cede32095"
-dependencies = [
- "bare-metal",
- "bit_field",
- "embedded-hal",
-]
-
-[[package]]
 name = "riscv-target"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1690,24 +1655,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "sbi-rt"
-version = "0.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c113c53291db8ac141e01f43224ed488b8d6001ab66737b82e04695a43a42b7"
-dependencies = [
- "sbi-spec",
-]
-
-[[package]]
-name = "sbi-spec"
-version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d4027cf9bb591a9fd0fc0e283be6165c5abe96cb73e9f0e24738c227f425377"
-dependencies = [
- "static_assertions",
 ]
 
 [[package]]
@@ -2419,20 +2366,15 @@ dependencies = [
  "cfg-if 1.0.0",
  "chrono",
  "customizable-buddy",
- "dtb-walker",
  "executor",
  "kernel-hal",
  "linux-object",
  "lock",
  "log",
- "page-table",
- "r0",
  "rayboot",
  "rcore-fs",
  "rcore-fs-hostfs",
  "rcore-fs-sfs",
- "riscv 0.9.0",
- "sbi-rt",
  "spin 0.9.4",
  "zcore-loader",
  "zircon-object",
@@ -2455,7 +2397,6 @@ dependencies = [
  "numeric-enum-macro",
  "pci",
  "rcore-console",
- "riscv 0.9.0",
  "sdl2",
  "smoltcp",
  "virtio-drivers",

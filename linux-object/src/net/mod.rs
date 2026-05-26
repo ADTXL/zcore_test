@@ -261,7 +261,6 @@ fn poll_ifaces() {
 
 // ============= Rand Port =============
 
-/// !!!! need riscv rng
 pub fn rand() -> u64 {
     // rdrand is not implemented in QEMU
     // so use rdtsc instead

@@ -1,31 +1,4 @@
-﻿[qemu.virt-riscv64]
-arch = "riscv64"
-
-[qemu.virt-aarch64]
+﻿[qemu.virt-aarch64]
 arch = "aarch64"
 link-user-img = "prebuilt/zircon/arm64/bringup_fuchsia.zbi" #添加了这一行以提供zbi,这里的修改在运行fuchsia时无效
 features =["zircon"]  # 添加这一行以启用zircon特性
-
-
-[allwinner.nezha]
-arch = "riscv64"
-link-user-img = "zCore/riscv64.img"
-pci-support = false
-features = ["allwinner-drivers"]
-
-[cvitek.cr1825]
-arch = "riscv64"
-link-user-img = "zCore/riscv64.img"
-pci-support = false
-features = ["thead-maee"]
-
-[starfive.visionfive]
-arch = "riscv64"
-link-user-img = "zCore/riscv64.img"
-pci-support = false
-
-[sifive.fu740]
-arch = "riscv64"
-link-user-img = "zCore/riscv64.img"
-pci-support = true
-features = ["fu740-drivers"]

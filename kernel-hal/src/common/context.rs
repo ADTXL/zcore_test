@@ -43,26 +43,6 @@ pub enum TrapReason {
 pub const TIMER_INTERRUPT_VEC: usize = crate::timer_interrupt_vector();
 
 impl TrapReason {
-    #[cfg(target_arch = "riscv64")]
-    pub fn from(scause: riscv::register::scause::Scause) -> Self {
-        use riscv::register::scause::{Exception, Trap};
-        let stval = riscv::register::stval::read();
-        match scause.cause() {
-            Trap::Exception(Exception::UserEnvCall) => Self::Syscall,
-            Trap::Exception(Exception::Breakpoint) => Self::SoftwareBreakpoint,
-            Trap::Exception(Exception::IllegalInstruction) => Self::UndefinedInstruction,
-            Trap::Exception(Exception::InstructionMisaligned)
-            | Trap::Exception(Exception::StoreMisaligned) => Self::UnalignedAccess,
-            Trap::Exception(Exception::LoadPageFault) => Self::PageFault(stval, MMUFlags::READ),
-            Trap::Exception(Exception::StorePageFault) => Self::PageFault(stval, MMUFlags::WRITE),
-            Trap::Exception(Exception::InstructionPageFault) => {
-                Self::PageFault(stval, MMUFlags::EXECUTE)
-            }
-            Trap::Interrupt(_) => Self::Interrupt(scause.code()),
-            _ => Self::GernelFault(scause.code()),
-        }
-    }
-
     #[cfg(target_arch = "aarch64")]
     pub fn from(esr: usize) -> Self {
         // TODO: check if is right
@@ -137,14 +117,6 @@ impl UserContext {
                 // Mask SError exceptions (currently unhandled).
                 // TODO
                 self.0.spsr = 1 << 8;
-            } else if #[cfg(target_arch = "riscv64")] {
-                self.0.sepc = pc;
-                self.0.general.sp = sp;
-                self.0.general.a0 = args[0];
-                self.0.general.a1 = args[1];
-                self.0.general.a2 = args[2];
-                // SUM = 1, FS = 0b11, SPIE = 1
-                self.0.sstatus = 1 << 18 | 0b11 << 13 | 1 << 5;
             }
         }
     }
@@ -152,9 +124,7 @@ impl UserContext {
     /// Setup return addr
     pub fn set_ra(&mut self, _ra: usize) {
         cfg_if! {
-            if #[cfg(target_arch = "riscv64")] {
-                self.0.general.ra = _ra;
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 self.0.general.x30 = _ra;
             } else {
                 unimplemented!("Unsupported arch!");
@@ -178,10 +148,6 @@ impl UserContext {
         cfg_if! {
             if #[cfg(target_arch = "aarch64")] {
                 TrapReason::from(self.0.trap_num)
-            } else if #[cfg(target_arch = "riscv64")] {
-                TrapReason::from(riscv::register::scause::read())
-            } else {
-                unimplemented!()
             }
         }
     }
@@ -190,10 +156,6 @@ impl UserContext {
         cfg_if! {
             if #[cfg(target_arch = "aarch64")] {
                 unimplemented!() // ESR_EL1
-            } else if #[cfg(target_arch = "riscv64")] {
-                riscv::register::scause::read().bits()
-            } else {
-                unimplemented!()
             }
         }
     }
@@ -217,15 +179,6 @@ impl UserContext {
                     UserContextField::ThreadPointer => &mut self.0.tpidr,
                     UserContextField::ReturnValue => &mut self.0.general.x0,
                 }
-            } else if #[cfg(target_arch = "riscv64")] {
-                match which {
-                    UserContextField::InstrPointer => &mut self.0.sepc,
-                    UserContextField::StackPointer => &mut self.0.general.sp,
-                    UserContextField::ThreadPointer => &mut self.0.general.tp,
-                    UserContextField::ReturnValue => &mut self.0.general.a0,
-                }
-            } else {
-                unimplemented!()
             }
         }
     }
@@ -241,14 +194,8 @@ impl UserContext {
     }
 
     /// Advance the instruction pointer in trap handler on some architecture.
-    pub fn advance_pc(&mut self, reason: TrapReason) {
-        cfg_if! {
-            if #[cfg(target_arch = "riscv64")] {
-                if let TrapReason::Syscall = reason { self.0.sepc += 4 }
-            } else {
-                let _ = reason;
-            }
-        }
+    pub fn advance_pc(&mut self, _reason: TrapReason) {
+        // aarch64: PC advancement is handled in the trap handler
     }
 }
 

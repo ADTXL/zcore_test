@@ -12,14 +12,6 @@ Reimplement [Zircon][zircon] microkernel in safe Rust as a userspace program!
 
 - 2020.04.16: Zircon console is working on zCore! 🎉
 
-## Quick start for RISCV64
-
-```sh
-make riscv-image
-cd zCore
-make run ARCH=riscv64 LINUX=1
-```
-
 ## Getting started
 
 Environments：
@@ -170,23 +162,6 @@ cd scripts && python3 core-tests.py
 # Check `zircon/test-result.txt` for results.
 ```
 
-#### riscv-64 Linux related
-
-Run Linux musl libc-tests for CI:
-
-```sh
-##  Prepare rootfs with libc-test & oscomp apps
-make riscv-image
-## Build zCore kernel & Testing
-cd scripts && python3 baremetal-test-riscv64.py
-##
-```
-
-You can use[scripts/baremetal-libc-test-ones-riscv64.py](./scripts/baremetal-libc-test-ones-riscv64.py) & [`scripts/linux/baremetal-test-ones-rv64.txt`](scripts/linux/baremetal-test-ones-rv64.txt)to test
-specified apps.
-
-[`scripts/linux/baremetal-test-fail-riscv64.txt`](./scripts/linux/baremetal-test-fail-riscv64.txt)includes all failed riscv-64 apps (We need YOUR HELP to fix bugs!)
-
 ## Graph/Game
 
 snake game: <https://github.com/rcore-os/rcore-user/blob/master/app/src/snake.c>
@@ -232,10 +207,6 @@ Operation
 ```
 make doc
 ```
-
-### RISC-V 64 porting info
-
-- [porting riscv64 doc](./docs/porting-rv64.md)
 
 ## Components
 

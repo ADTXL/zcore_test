@@ -29,10 +29,10 @@
 - 反汇编文件默认输出位置修改为 target 目录下，这样可以被 cargo clean 删除；
 - 增加 bin 命令生成系统 raw 镜像；
 - 所有编译类命令（asm、bin、qemu）都支持使用 `--features` 参数调整特性。如果设置了 `link-user-img` 特性，将自动递归构建文件系统；
-  例如，要为 d1 生成镜像，使用：
+  例如，要为 aarch64 生成镜像，使用：
 
   ```bash
-  cargo bin --arch riscv64 --features "linux board-d1 link-user-img" --output z.bin
+  cargo bin --arch aarch64 --features "linux link-user-img" --output z.bin
   ```
 
 ## 20220704 (YdrMaster)
@@ -73,7 +73,7 @@
 
 - 修改 command/download，使用宏支持多种方式下载；
 - 增加 `GitCloneContext`，用于支持多种克隆选项，主要是选分支；
-- 增加 `cargo ffmpeg --arch riscv64`，自动向 rootfs 添加 ffmpeg so 库；
+- 增加 `cargo ffmpeg`，自动向 rootfs 添加 ffmpeg so 库；
 - 如果先构建 ffmpeg 再构建 opencv，则 opencv 能找到 ffmpeg；
 - git clone 增加 `--depth=x` 选项以减少流量需求；
 
@@ -81,7 +81,7 @@
 
 - 重构架构相关操作，将操作架构相关的 linux rootfs 的操作与架构定义分离，放到独立的模块中；
 - linux rootfs 添加测试集、构造镜像操作分离到独立的文件，方便添加更多操作；
-- 增加 `cargo opencv --arch riscv64`，自动向 rootfs 添加 opencv so 库；
+- 增加 `cargo opencv`，自动向 rootfs 添加 opencv so 库；
 
 ## 20220604 (YdrMaster)
 
@@ -93,10 +93,10 @@
 
 ## 20220513 (YdrMaster)
 
-- 选择架构现在是一个参数而不是子命令，例如 `cargo rootfs --arch riscv64`；
+- 选择架构现在是一个参数而不是子命令，例如 `cargo rootfs --arch aarch64`；
 - 增加 `asm` 指令将指定参数编译的内核反汇编到文件；
-- 增加 `qemu` 指令在 QEMU 中启动 zCore（目前仅支持 RiscV64+Linux），可配置 SMP，可配置连接 gdb；
-- 增加 `gdb` 指令启动 gdb 并连接指定端口（目前仅支持 RiscV64）。
+- 增加 `qemu` 指令在 QEMU 中启动 zCore，可配置 SMP，可配置连接 gdb；
+- 增加 `gdb` 指令启动 gdb 并连接指定端口。
 
 ## 20220512 (YdrMaster)
 

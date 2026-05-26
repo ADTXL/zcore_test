@@ -1,14 +1,8 @@
-cfg_if! {
-    if #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))] {
-        #[path = "arch/riscv/mod.rs"]
-        pub mod arch;
-        pub use self::arch::{sbi, timer_interrupt_vector};
-    } else if #[cfg(target_arch = "aarch64")] {
-        #[path = "arch/aarch64/mod.rs"]
-        pub mod arch;
-        pub use self::arch::timer_interrupt_vector;
-    }
-}
+#[cfg(target_arch = "aarch64")]
+#[path = "arch/aarch64/mod.rs"]
+pub mod arch;
+#[cfg(target_arch = "aarch64")]
+pub use self::arch::timer_interrupt_vector;
 
 pub mod boot;
 pub mod mem;

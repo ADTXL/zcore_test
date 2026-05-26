@@ -362,26 +362,10 @@ async fn handler_user_trap(
 
 fn syscall_num(ctx: &UserContext) -> usize {
     let regs = ctx.general();
-    cfg_if! {
-        if #[cfg(target_arch = "aarch64")] {
-            regs.x16
-        } else if #[cfg(target_arch = "riscv64")] {
-            regs.a7
-        } else {
-            unimplemented!()
-        }
-    }
+    regs.x16
 }
 
 fn syscall_args(ctx: &UserContext) -> [usize; 8] {
     let regs = ctx.general();
-    cfg_if! {
-        if #[cfg(target_arch = "aarch64")] {
-            [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5, regs.x6, regs.x7]
-        } else if #[cfg(target_arch = "riscv64")] {
-            [regs.a0, regs.a1, regs.a2, regs.a3, regs.a4, regs.a5, regs.a6, regs.a7]
-        } else {
-            unimplemented!()
-        }
-    }
+    [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5, regs.x6, regs.x7]
 }

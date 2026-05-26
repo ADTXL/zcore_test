@@ -93,10 +93,6 @@ impl LinuxElfLoader {
             envs,
             auxv: {
                 let mut map = BTreeMap::new();
-                #[cfg(target_arch = "riscv64")]
-                if let Some(phdr_vaddr) = elf.get_phdr_vaddr() {
-                    map.insert(abi::AT_PHDR, phdr_vaddr as usize);
-                }
                 #[cfg(target_arch = "aarch64")]
                 {
                     map.insert(abi::AT_BASE, base);

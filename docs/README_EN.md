@@ -17,25 +17,13 @@ An OS kernel based on zircon, provides Linux compatible mode.
 
 ## Launch zCore
 
-   ```bash
-   cargo qemu --arch riscv64
-   ```
-
-   This command will launch zCore using qemu-system-riscv64。
-
-   The default file system will contain a busybox application and a musl-libc linker. They are compiled by automatic downloaded musl-libc RISC-V cross-compilation tool chain.
-
 ## Table of contents
 
-- [Launch zCore](#launch-zcore)
 - [Build the project](#build-the-project)
   - [Commands](#commands)
   - [Commands reference](#commands-reference)
 - [Platform support](#platform-support)
   - [Qemu/virt](#qemuvirt)
-  - [Allwinner/nezha](#allwinnernezha)
-  - [starfivetech/visionfive](#starfivetechvisionfive)
-  - [cvitek/cr1825](#cvitekcr1825)
 
 ## Build the project
 
@@ -124,7 +112,7 @@ Dumps the asm of kernel for specific architecture.
 The default output is `target/zcore.asm`.
 
 ```bash
-cargo asm -m virt-riscv64 -o z.asm
+cargo asm -m virt-aarch64 -o z.asm
 ```
 
 #### **bin**
@@ -133,7 +121,7 @@ Strips kernel binary for specific architecture.
 The default output is `target/{arch}/release/zcore.bin`.
 
 ```bash
-cargo bin -m virt-riscv64 -o z.bin
+cargo bin -m virt-aarch64 -o z.bin
 ```
 
 #### **qemu**
@@ -141,13 +129,7 @@ cargo bin -m virt-riscv64 -o z.bin
 Runs zCore in qemu.
 
 ```bash
-cargo qemu --arch riscv64 --smp 4
-```
-
-Connects qemu to gdb：
-
-```bash
-cargo qemu --arch riscv64 --smp 4 --gdb 1234
+cargo qemu --arch aarch64 --smp 4
 ```
 
 #### **rootfs**
@@ -157,7 +139,7 @@ This command will remove the existing rootfs directory for this architecture,
 and rebuild a minimum rootfs.
 
 ```bash
-cargo rootfs --arch riscv64
+cargo rootfs --arch aarch64
 ```
 
 #### **musl-libs**
@@ -165,7 +147,7 @@ cargo rootfs --arch riscv64
 Copies musl so files to rootfs directory.
 
 ```bash
-cargo musl-libs --arch riscv64
+cargo musl-libs --arch aarch64
 ```
 
 #### **ffmpeg**
@@ -173,7 +155,7 @@ cargo musl-libs --arch riscv64
 Copies ffmpeg so files to rootfs directory.
 
 ```bash
-cargo ffmpeg --arch riscv64
+cargo ffmpeg --arch aarch64
 ```
 
 #### **opencv**
@@ -182,7 +164,7 @@ Copies opencv so files to rootfs directory.
 If ffmpeg is already there, this opencv will build with ffmpeg support.
 
 ```bash
-cargo opencv --arch riscv64
+cargo opencv --arch aarch64
 ```
 
 #### **libc-test**
@@ -190,7 +172,7 @@ cargo opencv --arch riscv64
 Copies libc test files to rootfs directory.
 
 ```bash
-cargo libc-test --arch riscv64
+cargo libc-test --arch aarch64
 ```
 
 #### **other-test**
@@ -198,7 +180,7 @@ cargo libc-test --arch riscv64
 Copies other test files to rootfs directory.
 
 ```bash
-cargo other-test --arch riscv64
+cargo other-test --arch aarch64
 ```
 
 #### **image**
@@ -206,7 +188,7 @@ cargo other-test --arch riscv64
 Builds the linux rootfs image file.
 
 ```bash
-cargo image --arch riscv64
+cargo image --arch aarch64
 ```
 
 #### **linux-libos**
@@ -224,33 +206,3 @@ cargo linux-libos --args /bin/busybox
 ### Qemu/virt
 
 Launch with command directly, see [launch zCore](#launch-zcore).
-
-### Allwinner/nezha
-
-Build kernel binary with the following command:
-
-```bash
-cargo bin -m nezha -o z.bin
-```
-
-Then deploy the binary to Flash or DRAM with [rustsbi-d1](https://github.com/rustsbi/rustsbi-d1).
-
-### Starfivetech/visionfive
-
-Build kernel binary with the following command:
-
-```bash
-cargo bin -m visionfive -o z.bin
-```
-
-Then, see [this document](docs/README-visionfive.md) for detailed description, launching the system through u-boot network.
-
-### cvitek/cr1825
-
-Build kernel binary with the following command:
-
-```bash
-cargo bin -m cr1825 -o z.bin
-```
-
-Then launch the system through u-boot network.

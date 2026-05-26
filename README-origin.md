@@ -21,25 +21,13 @@
 
 ## 启动内核
 
-   ```bash
-   cargo qemu --arch riscv64
-   ```
-
-   这个命令会使用 qemu-system-riscv64 启动 zCore。
-
-   默认的文件系统中将包含 busybox 应用程序和 musl-libc 链接器。它们是用自动下载的 musl-libc RISC-V 交叉编译工具链编译的。
-
 ## 目录
 
-- [启动内核](#启动内核)
 - [项目构建](#项目构建)
   - [构建命令](#构建命令)
   - [命令参考](#命令参考)
-- [平台支持](#平台支持)
+- [平台支持](#平台-support)
   - [Qemu/virt](#qemuvirt)
-  - [全志/哪吒](#全志哪吒)
-  - [赛昉/星光](#赛昉星光)
-  - [晶视/cr1825](#晶视cr1825)
 
 ## 项目构建
 
@@ -128,7 +116,7 @@ cargo zircon-init
 反汇并保存编指定架构的内核。默认保存到 `target/zcore.asm`。
 
 ```bash
-cargo asm -m virt-riscv64 -o z.asm
+cargo asm -m virt-aarch64 -o z.asm
 ```
 
 #### **bin**
@@ -136,7 +124,7 @@ cargo asm -m virt-riscv64 -o z.asm
 生成内核 raw 镜像到指定位置。默认输出到 `target/{arch}/release/zcore.bin`。
 
 ```bash
-cargo bin -m virt-riscv64 -o z.bin
+cargo bin -m virt-aarch64 -o z.bin
 ```
 
 #### **qemu**
@@ -144,13 +132,7 @@ cargo bin -m virt-riscv64 -o z.bin
 在 Qemu 中启动 zCore。这需要 Qemu 已经安装好了。
 
 ```bash
-cargo qemu --arch riscv64 --smp 4
-```
-
-支持将 qemu 连接到 gdb：
-
-```bash
-cargo qemu --arch riscv64 --smp 4 --gdb 1234
+cargo qemu --arch aarch64 --smp 4
 ```
 
 #### **rootfs**
@@ -158,7 +140,7 @@ cargo qemu --arch riscv64 --smp 4 --gdb 1234
 重建 Linux rootfs。直接执行这个命令会清空已有的为此架构构造的 rootfs 目录，重建最小的 rootfs。
 
 ```bash
-cargo rootfs --arch riscv64
+cargo rootfs --arch aarch64
 ```
 
 #### **musl-libs**
@@ -166,7 +148,7 @@ cargo rootfs --arch riscv64
 将 musl 动态库拷贝到 rootfs 目录对应位置。
 
 ```bash
-cargo musl-libs --arch riscv64
+cargo musl-libs --arch aarch64
 ```
 
 #### **ffmpeg**
@@ -174,7 +156,7 @@ cargo musl-libs --arch riscv64
 将 ffmpeg 动态库拷贝到 rootfs 目录对应位置。
 
 ```bash
-cargo ffmpeg --arch riscv64
+cargo ffmpeg --arch aarch64
 ```
 
 #### **opencv**
@@ -182,7 +164,7 @@ cargo ffmpeg --arch riscv64
 将 opencv 动态库拷贝到 rootfs 目录对应位置。如果 ffmpeg 已经放好了，opencv 将会编译出包含 ffmepg 支持的版本。
 
 ```bash
-cargo opencv --arch riscv64
+cargo opencv --arch aarch64
 ```
 
 #### **libc-test**
@@ -190,7 +172,7 @@ cargo opencv --arch riscv64
 将 libc 测试集拷贝到 rootfs 目录对应位置。
 
 ```bash
-cargo libc-test --arch riscv64
+cargo libc-test --arch aarch64
 ```
 
 #### **other-test**
@@ -198,7 +180,7 @@ cargo libc-test --arch riscv64
 将其他测试集拷贝到 rootfs 目录对应位置。
 
 ```bash
-cargo other-test --arch riscv64
+cargo other-test --arch aarch64
 ```
 
 #### **image**
@@ -206,7 +188,7 @@ cargo other-test --arch riscv64
 从 rootfs 目录构建 Linux rootfs 镜像文件。
 
 ```bash
-cargo image --arch riscv64
+cargo image --arch aarch64
 ```
 
 #### **linux-libos**
@@ -230,38 +212,6 @@ cargo linux-libos --args "/bin/busybox ls"
 ### Qemu/virt
 
 直接使用命令启动，参见[启动内核](#启动内核)和 [`qemu` 命令](#qemu)。
-
-### 全志/哪吒
-
-使用以下命令构造系统镜像：
-
-```bash
-cargo bin -m nezha -o z.bin
-```
-
-然后使用 [rustsbi-d1](https://github.com/rustsbi/rustsbi-d1) 将镜像部署到 Flash 或 DRAM。
-
-另: 可以查看[README for D1 文档](docs/README-D1.md)获知更多D1开发板有关的操作指导。
-
-### 赛昉/星光
-
-使用以下命令构造系统镜像：
-
-```bash
-cargo bin -m visionfive -o z.bin
-```
-
-然后根据[此文档](docs/README-visionfive.md)的详细说明通过 u-boot 网络启动系统。
-
-### 晶视/cr1825
-
-使用以下命令构造系统镜像：
-
-```bash
-cargo bin -m cr1825 -o z.bin
-```
-
-然后通过 u-boot 网络启动系统。
 
 ## 其他
 

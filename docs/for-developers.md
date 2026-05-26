@@ -138,8 +138,8 @@ zCore 支持多种平台的不同硬件，难以避免使用编译选项。但�
 4. 平台相关的 feature，应增加如下的约束，而不是使用 `all(target_arch = ..., feature = ...)`：
 
    ```rust
-   #[cfg(all(feature = "sbi", not(target_arch = "riscv64")))]
-   compile_error!("`sbi` is only available on RISC-V platforms");
+   #[cfg(all(feature = "sbi", not(target_arch = "aarch64")))]
+   compile_error!("`sbi` is only available on supported platforms");
    ```
 
 > 现有代码不完全满足以上标准，将逐步改正

@@ -121,11 +121,7 @@ fn handle_signal(
     // backup current context
     thread.backup_context(*ctx, siginfo_ptr, uctx_ptr);
     // set user return address as `action.restorer`
-    cfg_if! {
-        {
-            ctx.set_ra(action.restorer);
-        }
-    }
+    ctx.set_ra(action.restorer);
     // set trapframe
     ctx.setup_uspace(
         action.handler,
@@ -218,26 +214,10 @@ async fn handle_user_trap(thread: &CurrentThread, mut ctx: Box<UserContext>) -> 
 
 fn syscall_num(ctx: &UserContext) -> usize {
     let regs = ctx.general();
-    cfg_if! {
-        if #[cfg(target_arch = "aarch64")] {
-            regs.x8
-        } else if #[cfg(target_arch = "riscv64")] {
-            regs.a7
-        } else {
-            unimplemented!()
-        }
-    }
+    regs.x8
 }
 
 fn syscall_args(ctx: &UserContext) -> [usize; 6] {
     let regs = ctx.general();
-    cfg_if! {
-        if #[cfg(target_arch = "aarch64")] {
-            [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5]
-        } else if #[cfg(target_arch = "riscv64")] {
-            [regs.a0, regs.a1, regs.a2, regs.a3, regs.a4, regs.a5]
-        } else {
-            unimplemented!()
-        }
-    }
+    [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5]
 }

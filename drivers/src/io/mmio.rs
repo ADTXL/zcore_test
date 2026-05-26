@@ -37,16 +37,16 @@ where
         #[allow(clippy::let_and_return)]
         unsafe {
             let val = core::ptr::read_volatile(&self.0 as *const _);
-            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            core::arch::asm!("fence i,r");
+            #[cfg(target_arch = "aarch64")]
+            core::arch::asm!("dmb ishld");
             val
         }
     }
 
     fn write(&mut self, value: T) {
         unsafe {
-            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            core::arch::asm!("fence w,o");
+            #[cfg(target_arch = "aarch64")]
+            core::arch::asm!("dmb ishst");
             core::ptr::write_volatile(&mut self.0 as *mut _, value)
         };
     }

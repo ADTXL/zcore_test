@@ -7,7 +7,6 @@ use std::{path::PathBuf, str::FromStr};
 /// 支持的 CPU 架构。
 #[derive(Clone, Copy)]
 pub(crate) enum Arch {
-    Riscv64,
     Aarch64,
 }
 
@@ -16,7 +15,6 @@ impl Arch {
     #[inline]
     pub const fn name(&self) -> &'static str {
         match self {
-            Self::Riscv64 => "riscv64",
             Self::Aarch64 => "aarch64",
         }
     }
@@ -61,7 +59,6 @@ impl FromStr for Arch {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "riscv64" => Ok(Self::Riscv64),
             "aarch64" => Ok(Self::Aarch64),
             _ => Err(XError::EnumParse {
                 type_name: "Arch",
@@ -73,7 +70,7 @@ impl FromStr for Arch {
 
 #[derive(Clone, Copy, Args)]
 pub(crate) struct ArchArg {
-    /// Build architecture, `riscv64` or `aarch64`.
+    /// Build architecture, `aarch64`.
     #[clap(short, long)]
     pub arch: Arch,
 }

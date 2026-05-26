@@ -141,14 +141,6 @@ cfg_if::cfg_if! {
             far: u64,
             _padding2: u64,
         }
-    } else if #[cfg(target_arch = "riscv64")] {
-        #[repr(C)]
-        #[derive(Debug, Default, Clone)]
-        struct ExceptionContextInner {
-            scause: u64,
-            stval: u64,
-            _padding: u64,
-        }
     }
 }
 
@@ -164,12 +156,6 @@ impl ExceptionContext {
                 Self(ExceptionContextInner {
                     esr: ctx.raw_trap_reason() as _,
                     far: fault_vaddr,
-                    ..Default::default()
-                })
-            } else if #[cfg(target_arch = "riscv64")] {
-                Self(ExceptionContextInner {
-                    scause: ctx.raw_trap_reason() as _,
-                    stval: fault_vaddr,
                     ..Default::default()
                 })
             }

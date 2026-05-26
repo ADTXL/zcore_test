@@ -3,7 +3,6 @@
 #[macro_use]
 extern crate clap;
 
-#[cfg(not(target_arch = "riscv64"))]
 mod dump;
 
 mod arch;
@@ -78,7 +77,6 @@ enum Commands {
     /// ```bash
     /// cargo dump
     /// ```
-    #[cfg(not(target_arch = "riscv64"))]
     Dump,
 
     /// 下载 zircon 模式需要的二进制文件。Download zircon binaries.
@@ -121,7 +119,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo asm --arch riscv64 --output riscv64.asm
+    /// cargo asm --arch aarch64 --output aarch64.asm
     /// ```
     Asm(OutArgs),
 
@@ -134,7 +132,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo bin --arch riscv64 --output zcore.bin
+    /// cargo bin --arch aarch64 --output zcore.bin
     /// ```
     Bin(OutArgs),
 
@@ -143,7 +141,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo qemu --arch riscv64 --smp 4
+    /// cargo qemu --arch aarch64 --smp 4
     /// ```
     Qemu(QemuArgs),
 
@@ -152,7 +150,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo gdb --arch riscv64 --port 1234
+    /// cargo gdb --arch aarch64 --port 1234
     /// ```
     Gdb(GdbArgs),
 
@@ -166,7 +164,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo rootfs --arch riscv64
+    /// cargo rootfs --arch aarch64
     /// ```
     Rootfs(ArchArg),
 
@@ -175,7 +173,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo musl-libs --arch riscv64
+    /// cargo musl-libs --arch aarch64
     /// ```
     MuslLibs(ArchArg),
 
@@ -184,7 +182,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo ffmpeg --arch riscv64
+    /// cargo ffmpeg --arch aarch64
     /// ```
     Ffmpeg(ArchArg),
 
@@ -197,7 +195,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo opencv --arch riscv64
+    /// cargo opencv --arch aarch64
     /// ```
     Opencv(ArchArg),
 
@@ -206,7 +204,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo libc-test --arch riscv64
+    /// cargo libc-test --arch aarch64
     /// ```
     LibcTest(ArchArg),
 
@@ -215,7 +213,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo other-test --arch riscv64
+    /// cargo other-test --arch aarch64
     /// ```
     OtherTest(ArchArg),
 
@@ -224,7 +222,7 @@ enum Commands {
     /// # Example
     ///
     /// ```bash
-    /// cargo image --arch riscv64
+    /// cargo image --arch aarch64
     /// ```
     Image(ArchArg),
 
@@ -282,7 +280,6 @@ fn main() {
                 unset_git_proxy(global);
             }
         }
-        #[cfg(not(target_arch = "riscv64"))]
         Dump => dump::dump_config(),
         ZirconInit => install_zircon_prebuilt(),
         UpdateAll => update_all(),
@@ -397,7 +394,7 @@ fn check_style() {
         .invoke();
 
     println!("Check bare-metal");
-    for arch in [Arch::Riscv64, Arch::Aarch64] {
+    for arch in [Arch::Aarch64] {
         println!("    Checks {} bare-metal", arch.name());
         BuildConfig::from_args(BuildArgs {
             machine: format!("virt-{}", arch.name()),

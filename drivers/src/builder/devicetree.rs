@@ -206,12 +206,6 @@ impl<M: IoMapper> DevicetreeDriverBuilder<M> {
             parse_reg(node, props).and_then(|(paddr, size)| self.mmap(paddr as _, size as _));
         use crate::irq::*;
         let dev = Device::Irq(match comp {
-            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            c if c.contains("riscv,cpu-intc") => Arc::new(riscv::Intc::new()),
-            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            c if c.contains("riscv,plic0") => Arc::new(riscv::Plic::new(base_vaddr?)),
-            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            c if c.contains("sifive,fu540-c000-plic") => Arc::new(riscv::Plic::new(base_vaddr?)),
             _ => return Err(DeviceError::NotSupported),
         });
 
@@ -269,12 +263,6 @@ impl<M: IoMapper> DevicetreeDriverBuilder<M> {
         let irq_num = interrupts_extended[1];
         use crate::net::*;
         let dev = Device::Net(match comp {
-            #[cfg(target_arch = "riscv64")]
-            c if c.contains("allwinner,sunxi-gmac") => {
-                Arc::new(rtlx_init(irq_num as usize, |paddr, size| {
-                    self.io_mapper.query_or_map(paddr, size)
-                })?)
-            }
             _ => return Err(DeviceError::NotSupported),
         });
 

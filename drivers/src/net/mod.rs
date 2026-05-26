@@ -10,14 +10,10 @@ pub mod loopback;
 pub use isomorphic_drivers::provider::Provider;
 pub use loopback::LoopbackInterface;
 
-cfg_if::cfg_if! {
-    if #[cfg(target_arch = "riscv64")] {
-mod realtek;
-mod rtlx;
+pub mod realtek;
+pub mod rtlx;
 
 pub use rtlx::*;
-    }
-}
 
 /*
 /// External functions that drivers must use

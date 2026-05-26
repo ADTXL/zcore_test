@@ -23,10 +23,6 @@ NET ?=
 OBJCOPY ?= rust-objcopy --binary-architecture=$(ARCH)
 OBJDUMP :=
 
-ifeq ($(ARCH), riscv64)
-  OBJDUMP := riscv64-linux-musl-objdump
-endif
-
 ifeq ($(LINUX), 1)
   CMDLINE ?= LOG=$(LOG)
 else
@@ -94,16 +90,7 @@ ifeq ($(LIBOS), 1)
   endif
   features += libos
 else
-  ifeq ($(ARCH), riscv64)
-    ifeq ($(PLATFORM), d1)
-	features += board-d1 link-user-img
-    else ifeq ($(PLATFORM), fu740)
-	SMP := 5
-	features += board-fu740
-    else ifeq ($(PLATFORM), c910light)
-	features += board-c910light link-user-img
-    endif
-  else ifeq ($(ARCH), aarch64)
+  ifeq ($(ARCH), aarch64)
   	ifeq ($(PLATFORM), raspi4b)
   	  features += link-user-img
   	endif
@@ -154,18 +141,7 @@ endif
 
 qemu_opts := -smp $(SMP)
 
-ifeq ($(ARCH), riscv64)
-  qemu_opts += \
-		-machine virt \
-		-bios default \
-		-m 1G \
-		-no-reboot \
-		-serial mon:stdio \
-		-serial file:/tmp/serial.out \
-		-kernel $(kernel_img) \
-		-initrd $(USER_IMG) \
-		-append "$(CMDLINE)"
-else ifeq ($(ARCH), aarch64)
+ifeq ($(ARCH), aarch64)
 	qemu_opts += \
 		-machine virt \
 		-cpu cortex-a72 \
@@ -184,19 +160,10 @@ qemu_opts += \
 	# -netdev tap,id=net1,script=ifup.sh,downscript=ifdown.sh
 
 ifeq ($(DISK), on)
-  ifeq ($(ARCH), riscv64)
-    qemu_opts += -device virtio-blk-device,drive=userdisk
-  endif
   qemu_opts += -drive format=qcow2,id=userdisk,if=none,file=$(qemu_disk)
 endif
 
 ifeq ($(GRAPHIC), on)
-  ifeq ($(ARCH), riscv64)
-    qemu_opts += \
-		-device virtio-gpu-device \
-		-device virtio-keyboard-device \
-		-device virtio-mouse-device
-  endif
 else
   qemu_opts += -display none
 endif
@@ -219,15 +186,6 @@ debug: build
 	gdb --args $(kernel_elf) $(ARGS)
 else
 build: $(kernel_img)
-ifeq ($(PLATFORM), fu740)
-	gzip -9 -cvf $(build_path)/zcore.bin > ./zcore.bin.gz
-	mkimage -f ../prebuilt/firmware/riscv/fu740_fdt.its ./zcore-fu740.itb
-	@echo 'Build zcore-fu740.itb FIT-uImage done'
-else ifeq ($(PLATFORM), c910light)
-	mkimage -A riscv -O linux -C none -T kernel -a 0x200000 -e 0x200000 \
-		-n "zCore for c910" \
-		-d $(build_path)/zcore.bin uImageC910
-endif
 run: build justrun
 debug: build debugrun
 endif
@@ -237,20 +195,8 @@ justrun: $(qemu_disk)
 ifeq ($(ARCH), aarch64)
 	$(sed) 's#\"cmdline\":.*#\"cmdline\": \"$(CMDLINE)\",#' disk/EFI/Boot/Boot.json
 endif
-ifeq ($(PLATFORM), d1)
-	$(OBJCOPY) ../prebuilt/firmware/riscv/d1_fw_payload.elf --strip-all -O binary ./zcore_d1.bin
-	dd if=$(kernel_img) of=zcore_d1.bin bs=512 seek=2048
-	xfel ddr ddr3
-	xfel write 0x40000000 zcore_d1.bin
-	xfel exec 0x40000000
-else
 	$(qemu) $(qemu_opts)
-endif
 
-
-ifeq ($(ARCH), riscv64)
-  gdb := riscv64-unknown-elf-gdb
-endif
 
 .PHONY: debugrun
 debugrun: $(qemu_disk)
@@ -292,9 +238,6 @@ clean:
 bootloader:
 
 $(kernel_img): kernel bootloader
-ifeq ($(ARCH), riscv64)
-	$(OBJCOPY) $(kernel_elf) --strip-all -O binary $@
-endif
 
 .PHONY: image
 image:
@@ -326,11 +269,4 @@ endif
 	vboxmanage startvm zCoreVM
 
 $(qemu_disk):
-ifeq ($(ARCH), riscv64)
-# FIXME: no longer need to create QCOW2 when use initrd for RISC-V
-	@echo Generating riscv64 sfsimg
-	@qemu-img convert -f raw riscv64.img -O qcow2 $@
-	@qemu-img resize $@ +5M
-else
 	@qemu-img create -f qcow2 $@ 100M
-endif

@@ -25,13 +25,6 @@ impl<T> InitOnce<T> {
         self.inner.call_once(|| value);
     }
 
-    #[cfg(any(doc, target_arch = "riscv64"))]
-    pub fn init_once<F>(&self, f: F)
-    where
-        F: FnOnce() -> T,
-    {
-        self.inner.call_once(f);
-    }
 
     pub fn default(&self) -> Option<&T> {
         self.default.as_ref()

@@ -137,7 +137,7 @@ impl BuildConfig {
         println!("strip zcore to {}", out.display());
         dir::create_parent(&out).unwrap();
         BinUtil::objcopy()
-            .arg("--binary-architecture=riscv64")  //TODO :根据arch调整
+            .arg("--binary-architecture=aarch64")
             .arg(obj)
             .args(["--strip-all", "-O", "binary"])
             .arg(&out)
@@ -207,11 +207,6 @@ impl QemuArgs {
                 qemu.args(&["-smp", &smp.to_string()]);
             });
         match arch {
-            Arch::Riscv64 => {
-                qemu.args(&["-machine", "virt"])
-                    .args(&["-bios", "default"])
-                    .args(&["-serial", "mon:stdio"]);
-            }
             Arch::Aarch64 => {
                 fs::copy(obj, INNER.join("disk").join("os")).unwrap();
                 qemu.args(&["-cpu", "cortex-a72"])
@@ -276,11 +271,6 @@ impl QemuArgs {
 impl GdbArgs {
     pub fn gdb(&self) {
         match self.arch.arch {
-            Arch::Riscv64 => {
-                Ext::new("riscv64-unknown-elf-gdb")
-                    .args(&["-ex", &format!("target remote localhost:{}", self.port)])
-                    .invoke();
-            }
             Arch::Aarch64 => {
                 Ext::new("aarch64-none-linux-gnu-gdb")
                     .args(&["-ex", &format!("target remote localhost:{}", self.port)])

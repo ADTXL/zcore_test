@@ -257,8 +257,6 @@ impl Syscall<'_> {
             #[cfg(not(target_arch = "aarch64"))]
             Sys::BLOCK_IN_KERNEL => self.sys_block_in_kernel(),
 
-            #[cfg(target_arch = "riscv64")]
-            _ => self.riscv64_syscall(sys_type, args).await,
             #[cfg(target_arch = "aarch64")]
             _ => self.aarch64_syscall(sys_type, args).await,
         };
@@ -280,15 +278,6 @@ impl Syscall<'_> {
         }
     }
 
-    #[cfg(target_arch = "riscv64")]
-    async fn riscv64_syscall(&mut self, sys_type: Sys, args: [usize; 6]) -> SysResult {
-        let [a0, a1, a2, a3, a4, _a5] = args;
-        match sys_type {
-            //Sys::OPEN => self.sys_open(a0.into(), a1, a2),
-            Sys::CLONE => self.sys_clone(a0, a1, a2.into(), a3, a4.into()),
-            _ => self.unknown_syscall(sys_type),
-        }
-    }
 
     /// unkown syscalls, currently is similar to unimplemented syscalls but emit an error
     fn unknown_syscall(&mut self, sys_type: Sys) -> SysResult {

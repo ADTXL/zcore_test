@@ -6,100 +6,45 @@ mod action;
 
 pub use action::*;
 
-cfg_if::cfg_if! {
-    if #[cfg(target_arch = "riscv64")] {
-        /// See musl struct __ucontext
-        #[repr(C)]
-        #[derive(Clone, Default, Debug)]
-        pub struct SignalUserContext {
-            pub flags: usize,
-            pub link: usize,
-            pub stack: SignalStack,
-            pub sig_mask: Sigset,
-            pub _pad: [u64; 15], // very strange, maybe a bug of musl libc
-            pub context: MachineContext,
-        }
-    } else { // others structures, this sample is for aarch64
-        /// See musl struct __ucontext
-        #[repr(C)]
-        #[derive(Clone, Default, Debug)]
-        pub struct SignalUserContext {
-            pub flags: usize,
-            pub link: usize,
-            pub stack: SignalStack,
-            pub sig_mask: Sigset,
-            pub _pad: [u64; 15], // very strange, maybe a bug of musl libc
-            pub context: MachineContext,
+/// See musl struct __ucontext
+#[repr(C)]
+#[derive(Clone, Default, Debug)]
+pub struct SignalUserContext {
+    pub flags: usize,
+    pub link: usize,
+    pub stack: SignalStack,
+    pub sig_mask: Sigset,
+    pub _pad: [u64; 15], // very strange, maybe a bug of musl libc
+    pub context: MachineContext,
+}
+
+/// TODO: other archs, this sample is for aarch64
+/// struct mcontext
+#[repr(C)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct MachineContext {
+    pub reserved_: [usize; 18 + 256],
+}
+
+impl Default for MachineContext {
+    fn default() -> Self {
+        Self {
+            reserved_: [0; 18 + 256],
         }
     }
 }
 
-cfg_if::cfg_if! {
-    if #[cfg(target_arch = "riscv64")] {
-        /// struct mcontext
-        #[repr(C, align(16))]
-        #[derive(Clone, Debug, Eq, PartialEq)]
-        pub struct MachineContext {
-            // general regs, but only regs[0](namely `pc`) is used
-            pub general_regs: [usize; 32],
-            // fpregs
-            pub fpstate: [usize; 66],
-        }
+impl MachineContext {
+    pub fn new(_pc : usize) -> Self {
+        unimplemented!();
+    }
 
-        impl Default for MachineContext {
-            fn default() -> Self {
-                Self {
-                    general_regs: [0; 32],
-                    fpstate: [0; 66],
-                }
-            }
-        }
+    pub fn get_pc(&self) -> usize {
+        unimplemented!();
+    }
 
-        impl MachineContext {
-            pub fn new(pc : usize) -> Self {
-                let mut n = Self::default();
-                n.general_regs[0] = pc;
-                n
-            }
-
-            pub fn get_pc(&self) -> usize {
-                self.general_regs[0]
-            }
-
-            pub fn set_pc(&mut self, pc: usize) {
-                self.general_regs[0] = pc;
-            }
-        }
-    } else {
-        /// TODO: other archs, this sample is for aarch64
-        /// struct mcontext
-        #[repr(C)]
-        #[derive(Clone, Debug, Eq, PartialEq)]
-        pub struct MachineContext {
-            pub reserved_: [usize; 18 + 256],
-        }
-
-        impl Default for MachineContext {
-            fn default() -> Self {
-                Self {
-                    reserved_: [0; 18 + 256],
-                }
-            }
-        }
-
-        impl MachineContext {
-            pub fn new(_pc : usize) -> Self {
-                unimplemented!();
-            }
-
-            pub fn get_pc(&self) -> usize {
-                unimplemented!();
-            }
-
-            pub fn set_pc(&mut self, _pc: usize) -> usize {
-                unimplemented!();
-            }
-        }
+    pub fn set_pc(&mut self, _pc: usize) -> usize {
+        unimplemented!();
     }
 }
 

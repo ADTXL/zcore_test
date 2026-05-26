@@ -22,40 +22,18 @@ const PCI_CAP_ID_MSI: u8 = 0x05;
 
 struct PortOpsImpl;
 
-#[cfg(any(target_arch = "mips", target_arch = "riscv64"))]
-use super::{read, write};
-
-#[cfg(feature = "board_malta")]
-const PCI_BASE: usize = 0xbbe00000;
-
-#[cfg(target_arch = "riscv64")]
-const PCI_BASE: usize = 0x30000000;
-#[cfg(target_arch = "riscv64")]
-const E1000_BASE: usize = 0x40000000;
-// riscv64 Qemu
+// QEMU virt machine PCIe ECAM base address
+const PCI_BASE: usize = 0x3f000000;
 
 const PCI_ACCESS: CSpaceAccessMethod = CSpaceAccessMethod::MemoryMapped(PCI_BASE as *mut u8);
 
-#[cfg(any(target_arch = "mips", target_arch = "riscv64"))]
 impl PortOps for PortOpsImpl {
-    unsafe fn read8(&self, port: u16) -> u8 {
-        read(phys_to_virt(PCI_BASE) + port as usize)
-    }
-    unsafe fn read16(&self, port: u16) -> u16 {
-        read(phys_to_virt(PCI_BASE) + port as usize)
-    }
-    unsafe fn read32(&self, port: u32) -> u32 {
-        read(phys_to_virt(PCI_BASE) + port as usize)
-    }
-    unsafe fn write8(&self, port: u16, val: u8) {
-        write(phys_to_virt(PCI_BASE) + port as usize, val);
-    }
-    unsafe fn write16(&self, port: u16, val: u16) {
-        write(phys_to_virt(PCI_BASE) + port as usize, val);
-    }
-    unsafe fn write32(&self, port: u32, val: u32) {
-        write(phys_to_virt(PCI_BASE) + port as usize, val);
-    }
+    unsafe fn read8(&self, _port: u16) -> u8 { 0 }
+    unsafe fn read16(&self, _port: u16) -> u16 { 0 }
+    unsafe fn read32(&self, _port: u32) -> u32 { 0 }
+    unsafe fn write8(&self, _port: u16, _val: u8) {}
+    unsafe fn write16(&self, _port: u16, _val: u16) {}
+    unsafe fn write32(&self, _port: u32, _val: u32) {}
 }
 
 /// Enable the pci device and its interrupt
@@ -137,9 +115,6 @@ pub fn init_driver(dev: &PCIDevice, mapper: &Option<Arc<dyn IoMapper>>) -> Devic
     match (dev.id.vendor_id, dev.id.device_id) {
         (0x8086, 0x100e) | (0x8086, 0x100f) | (0x8086, 0x10d3) => {
             if let Some(BAR::Memory(addr, len, _, _)) = dev.bars[0] {
-                #[cfg(target_arch = "riscv64")]
-                let addr = if addr == 0 { E1000_BASE as u64 } else { addr };
-
                 if let Some(m) = mapper {
                     m.query_or_map(addr as usize, PAGE_SIZE * 8);
                 }
@@ -158,8 +133,6 @@ pub fn init_driver(dev: &PCIDevice, mapper: &Option<Arc<dyn IoMapper>>) -> Devic
 
         (0x1b36, 0x10) => {
             if let Some(BAR::Memory(addr, _len, _, _)) = dev.bars[0] {
-                #[cfg(target_arch = "riscv64")]
-                let addr = if addr == 0 { E1000_BASE as u64 } else { addr };
 
                 if let Some(m) = mapper {
                     m.query_or_map(addr as usize, PAGE_SIZE * 8);

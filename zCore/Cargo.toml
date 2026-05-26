@@ -51,13 +51,6 @@ libos = [
   "rcore-fs-hostfs",
 ]
 
-# Run on Allwinner d1
-board-d1 = ["link-user-img", "no-pci", "kernel-hal/allwinner-drivers"]
-# T-HEAD C910 Light val board
-board-c910light = ["link-user-img", "kernel-hal/board-c910light", "no-pci"]
-# Run on u740
-board-fu740 = ["link-user-img", "kernel-hal/fu740-drivers"]
-
 # Use memory and ipi to simulate block device
 mock-disk = ["linux-object/mock-disk"]
 
@@ -82,14 +75,6 @@ async-std = { version = "1.10", optional = true }
 chrono = { version = "0.4", optional = true }
 bitmap-allocator = { git = "https://github.com/rcore-os/bitmap-allocator", rev = "88e871a5" }
 rcore-fs-hostfs = { git = "https://github.com/rcore-os/rcore-fs", rev = "1a3246b", optional = true }
-
-# RISC-V
-[target.'cfg(any(target_arch = "riscv32", target_arch = "riscv64"))'.dependencies]
-r0 = "1"
-riscv = "0.9"
-dtb-walker = "=0.2.0-alpha.3"
-page-table = "0.0.6"
-sbi-rt = { version = "0.0.2", features = ["legacy"] }
 
 # Bare-metal mode on aarch64
 [target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]

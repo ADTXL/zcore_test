@@ -1,4 +1,3 @@
-#[cfg(target_arch = "riscv64")]
 pub mod pci;
 
 pub fn phys_to_virt(paddr: PhysAddr) -> VirtAddr {

@@ -1,4 +1,4 @@
-﻿use crate::{commands::wget, Arch, PROJECT_DIR};
+﻿use crate::{commands::wget, PROJECT_DIR};
 use os_xtask_utils::{dir, CommandExt, Qemu, Tar};
 use std::{fs, path::Path};
 
@@ -10,8 +10,8 @@ impl super::LinuxRootfs {
         // 镜像路径
         let inner = PROJECT_DIR.join("zCore");
         let image = inner.join(format!("{arch}.img", arch = self.0.name()));
-        // aarch64 还需要下载 firmware
-        if let Arch::Aarch64 = self.0 {
+        // aarch64 firmware
+        {
             const URL:&str = "https://github.com/Luchangcheng2333/rayboot/releases/download/2.0.0/aarch64_firmware.tar.gz";
             let aarch64_tar = self.0.origin().join("Aarch64_firmware.zip");
             wget(URL, &aarch64_tar);
@@ -23,7 +23,7 @@ impl super::LinuxRootfs {
             let boot_dir = inner.join("disk").join("EFI").join("Boot");
             // 检查 boot_dir 是否存在，如果存在则跳过复制操作
             if !boot_dir.exists() {
-            // 如果 boot_dir 不存在，则清理并创建,并复制原版镜像
+                // 如果 boot_dir 不存在，则清理并创建,并复制原版镜像
                 dir::clear(&boot_dir).unwrap();
                 fs::copy(
                     fw_dir.join("aarch64_uefi.efi"),
