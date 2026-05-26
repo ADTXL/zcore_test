@@ -132,15 +132,7 @@ struct ExceptionHeader {
 struct ExceptionContext(ExceptionContextInner);
 
 cfg_if::cfg_if! {
-    if #[cfg(target_arch = "x86_64")] {
-        #[repr(C)]
-        #[derive(Debug, Default, Clone)]
-        struct ExceptionContextInner {
-            vector: u64,
-            err_code: u64,
-            cr2: u64,
-        }
-    } else if #[cfg(target_arch = "aarch64")] {
+    if #[cfg(target_arch = "aarch64")] {
         #[repr(C)]
         #[derive(Debug, Default, Clone)]
         struct ExceptionContextInner {
@@ -168,13 +160,7 @@ impl ExceptionContext {
             return Default::default();
         };
         cfg_if::cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                Self(ExceptionContextInner {
-                    vector: ctx.raw_trap_reason() as _,
-                    err_code: ctx.error_code() as _,
-                    cr2: fault_vaddr,
-                })
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 Self(ExceptionContextInner {
                     esr: ctx.raw_trap_reason() as _,
                     far: fault_vaddr,

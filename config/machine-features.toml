@@ -7,9 +7,6 @@ link-user-img = "prebuilt/zircon/arm64/bringup_fuchsia.zbi" #添加了这一行�
 features =["zircon"]  # 添加这一行以启用zircon特性
 
 
-[qemu.virt-x86_64]
-arch = "x86_64"
-
 [allwinner.nezha]
 arch = "riscv64"
 link-user-img = "zCore/riscv64.img"

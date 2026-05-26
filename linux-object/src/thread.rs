@@ -168,10 +168,6 @@ fn unmodified_check(siginfo: &SigInfo, user_ctx: &SignalUserContext) -> usize {
     check |= ((user_ctx.stack != default_ctx.stack) as usize) << 3;
     check |= ((user_ctx._pad != default_ctx._pad) as usize) << 4;
     check |= ((user_ctx.context != default_ctx.context) as usize) << 5;
-    #[cfg(target_arch = "x86_64")]
-    {
-        check |= ((user_ctx.fpregs_mem != default_ctx.fpregs_mem) as usize) << 6;
-    }
     check
 }
 

@@ -82,42 +82,6 @@ impl From<linux_object::fs::vfs::TimeSpec> for TimeSpec {
     }
 }
 
-#[cfg(target_arch = "x86_64")]
-#[repr(C)]
-#[derive(Debug)]
-pub struct Stat {
-    /// ID of device containing file
-    dev: u64,
-    /// inode number
-    ino: u64,
-    /// number of hard links
-    nlink: u64,
-
-    /// file type and mode
-    mode: StatMode,
-    /// user ID of owner
-    uid: u32,
-    /// group ID of owner
-    gid: u32,
-    /// padding
-    _pad0: u32,
-    /// device ID (if special file)
-    rdev: u64,
-    /// total size, in bytes
-    size: u64,
-    /// blocksize for filesystem I/O
-    blksize: u64,
-    /// number of 512B blocks allocated
-    blocks: u64,
-
-    /// last access time
-    atime: TimeSpec,
-    /// last modification time
-    mtime: TimeSpec,
-    /// last status change time
-    ctime: TimeSpec,
-}
-
 #[cfg(target_arch = "mips")]
 #[repr(C)]
 #[derive(Debug)]
@@ -159,7 +123,7 @@ pub struct Stat {
     blocks: u64,
 }
 
-#[cfg(not(any(target_arch = "x86_64", target_arch = "mips")))]
+#[cfg(not(target_arch = "mips"))]
 #[repr(C)]
 #[derive(Debug)]
 pub struct Stat {
@@ -214,7 +178,6 @@ impl From<Metadata> for Stat {
             mtime: info.mtime.into(),
             ctime: info.ctime.into(),
             _pad0: 0,
-            #[cfg(not(target_arch = "x86_64"))]
             _pad1: 0,
             #[cfg(target_arch = "mips")]
             _pad2: 0,

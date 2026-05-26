@@ -48,7 +48,7 @@ impl super::LinuxRootfs {
                     .env("PATH", path_with_musl_gcc)
                     .invoke();
             }
-            Arch::X86_64 | Arch::Aarch64 => todo!(),
+            Arch::Aarch64 => todo!(),
         }
         // 拷贝
         self.put_libs(musl, build.join("install"));

@@ -852,8 +852,6 @@ impl PcieDevice {
                         .unwrap()
                         .write32_offset(msi.mask_bits_offset, val);
                 }
-                // x86_64 does not support msi masking
-                #[cfg(not(target_arch = "x86_64"))]
                 error!("If the platform supports msi masking, do so");
             }
             _ => {
@@ -1586,9 +1584,6 @@ const PCI_COMMAND_BUS_MASTER_EN: u16 = 0x0004;
 const PCIE_CFG_COMMAND_INT_DISABLE: u16 = 1 << 10;
 const _PCIE_CFG_STATUS_INT_SYS: u16 = 1 << 3;
 
-#[cfg(target_arch = "x86_64")]
-const PCIE_HAS_IO_ADDR_SPACE: bool = true;
-#[cfg(not(target_arch = "x86_64"))]
 const PCIE_HAS_IO_ADDR_SPACE: bool = false;
 
 /// A structure used to hold output parameters when calling

@@ -263,7 +263,6 @@ fn poll_ifaces() {
 
 /// !!!! need riscv rng
 pub fn rand() -> u64 {
-    // use core::arch::x86_64::_rdtsc;
     // rdrand is not implemented in QEMU
     // so use rdtsc instead
     10000

@@ -8,7 +8,6 @@ use std::{path::PathBuf, str::FromStr};
 #[derive(Clone, Copy)]
 pub(crate) enum Arch {
     Riscv64,
-    X86_64,
     Aarch64,
 }
 
@@ -18,7 +17,6 @@ impl Arch {
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Riscv64 => "riscv64",
-            Self::X86_64 => "x86_64",
             Self::Aarch64 => "aarch64",
         }
     }
@@ -64,7 +62,6 @@ impl FromStr for Arch {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "riscv64" => Ok(Self::Riscv64),
-            "x86_64" => Ok(Self::X86_64),
             "aarch64" => Ok(Self::Aarch64),
             _ => Err(XError::EnumParse {
                 type_name: "Arch",
@@ -76,7 +73,7 @@ impl FromStr for Arch {
 
 #[derive(Clone, Copy, Args)]
 pub(crate) struct ArchArg {
-    /// Build architecture, `riscv64` or `x86_64`.
+    /// Build architecture, `riscv64` or `aarch64`.
     #[clap(short, long)]
     pub arch: Arch,
 }

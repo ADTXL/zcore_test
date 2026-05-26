@@ -51,9 +51,7 @@ const K_HANDLECOUNT: usize = K_FISTINSTRUMENTATIONDATA + 1;
 macro_rules! boot_library {
     ($name: expr) => {{
         cfg_if::cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                boot_library!($name, "../../prebuilt/zircon/x64")
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 boot_library!($name, "../../prebuilt/zircon/arm64")
             } else {
                 compile_error!("Unsupported architecture for zircon mode!")
@@ -191,12 +189,7 @@ pub fn run_userboot(zbi: impl AsRef<[u8]>, cmdline: &str) -> Arc<Process> {
     let stack_bottom = vmar
         .map(None, stack_vmo.clone(), 0, stack_vmo.len(), flags)
         .unwrap();
-    let sp = if cfg!(target_arch = "x86_64") {
-        // WARN: align stack to 16B, then emulate a 'call' (push rip)
-        stack_bottom + stack_vmo.len() - 8
-    } else {
-        stack_bottom + stack_vmo.len()
-    };
+    let sp = stack_bottom + stack_vmo.len();
 
     // channel
     let (user_channel, kernel_channel) = Channel::create();
@@ -370,9 +363,7 @@ async fn handler_user_trap(
 fn syscall_num(ctx: &UserContext) -> usize {
     let regs = ctx.general();
     cfg_if! {
-        if #[cfg(target_arch = "x86_64")] {
-            regs.rax
-        } else if #[cfg(target_arch = "aarch64")] {
+        if #[cfg(target_arch = "aarch64")] {
             regs.x16
         } else if #[cfg(target_arch = "riscv64")] {
             regs.a7
@@ -385,15 +376,7 @@ fn syscall_num(ctx: &UserContext) -> usize {
 fn syscall_args(ctx: &UserContext) -> [usize; 8] {
     let regs = ctx.general();
     cfg_if! {
-        if #[cfg(target_arch = "x86_64")] {
-            if cfg!(feature = "libos") {
-                let arg7 = unsafe{ (regs.rsp as *const usize).read() };
-                let arg8 = unsafe{ (regs.rsp as *const usize).add(1).read() };
-                [regs.rdi, regs.rsi, regs.rdx, regs.rcx, regs.r8, regs.r9, arg7, arg8]
-            } else {
-                [regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9, regs.r12, regs.r13]
-            }
-        } else if #[cfg(target_arch = "aarch64")] {
+        if #[cfg(target_arch = "aarch64")] {
             [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5, regs.x6, regs.x7]
         } else if #[cfg(target_arch = "riscv64")] {
             [regs.a0, regs.a1, regs.a2, regs.a3, regs.a4, regs.a5, regs.a6, regs.a7]

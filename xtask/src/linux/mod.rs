@@ -22,7 +22,7 @@ impl LinuxRootfs {
     }
 
     /// 构造启动内存文件系统 rootfs。
-    /// 对于 x86_64，这个文件系统可用于 libos 启动。
+    /// 对于 aarch64，这个文件系统可用于 libos 启动。
     /// 若设置 `clear`，将清除已存在的目录。
     pub fn make(&self, clear: bool) {
         // 若已存在且不需要清空，可以直接退出

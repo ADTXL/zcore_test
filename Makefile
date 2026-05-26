@@ -1,6 +1,6 @@
 # Makefile for top level of zCore
 
-ARCH ?= x86_64
+ARCH ?= aarch64
 XTASK ?= 1
 
 STRIP := $(ARCH)-linux-musl-strip
@@ -75,7 +75,4 @@ cleanup: clean
 clean-everything: clean
 	rm -rf ignored
 
-# rt-test:
-# 	cd rootfs/x86_64 && git clone https://kernel.googlesource.com/pub/scm/linux/kernel/git/clrkwllms/rt-tests --depth 1
-# 	cd rootfs/x86_64/rt-tests && make
-# 	echo x86 gcc build rt-test,now need manual modificy.
+

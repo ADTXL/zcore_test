@@ -1,7 +1,7 @@
 # Generate prebuilt/zircon from modified fuchsia source
 
 OUTDIR=zcore_prebuilt
-ARCH=${1:-x64}
+ARCH=${1:-arm64}
 mkdir -p ${OUTDIR}
 
 # set build target

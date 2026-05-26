@@ -69,10 +69,6 @@
 - 增加 `cargo linux-libos --args <args>`，以 linux libos 模式启动，并传递指定参数。
   例如 `cargo linux-libos --args /bin/busybox ls`；
 
-## 20220612 (YdrMaster)
-
-- 统一各种架构编译测例的过程（x86_64 现在也下载 musl toolchain）；
-
 ## 20220610 (YdrMaster)
 
 - 修改 command/download，使用宏支持多种方式下载；
@@ -97,7 +93,7 @@
 
 ## 20220513 (YdrMaster)
 
-- 选择架构现在是一个参数而不是子命令，例如 `cargo rootfs --arch x86_64`；
+- 选择架构现在是一个参数而不是子命令，例如 `cargo rootfs --arch riscv64`；
 - 增加 `asm` 指令将指定参数编译的内核反汇编到文件；
 - 增加 `qemu` 指令在 QEMU 中启动 zCore（目前仅支持 RiscV64+Linux），可配置 SMP，可配置连接 gdb；
 - 增加 `gdb` 指令启动 gdb 并连接指定端口（目前仅支持 RiscV64）。

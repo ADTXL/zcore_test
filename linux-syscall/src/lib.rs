@@ -257,8 +257,6 @@ impl Syscall<'_> {
             #[cfg(not(target_arch = "aarch64"))]
             Sys::BLOCK_IN_KERNEL => self.sys_block_in_kernel(),
 
-            #[cfg(target_arch = "x86_64")]
-            _ => self.x86_64_syscall(sys_type, args).await,
             #[cfg(target_arch = "riscv64")]
             _ => self.riscv64_syscall(sys_type, args).await,
             #[cfg(target_arch = "aarch64")]
@@ -278,42 +276,6 @@ impl Syscall<'_> {
         debug!("aarch6464_syscall: {:?}, args: {:?}", sys_type, args);
         match sys_type {
             Sys::CLONE => self.sys_clone(a0, a1, a2.into(), a3, a4.into()),
-            _ => self.unknown_syscall(sys_type),
-        }
-    }
-
-    #[cfg(target_arch = "x86_64")]
-    /// syscall specified for x86_64
-    async fn x86_64_syscall(&mut self, sys_type: Sys, args: [usize; 6]) -> SysResult {
-        let [a0, a1, a2, a3, a4, _a5] = args;
-        match sys_type {
-            Sys::OPEN => self.sys_open(a0.into(), a1, a2),
-            Sys::STAT => self.sys_stat(a0.into(), a1.into()),
-            Sys::LSTAT => self.sys_lstat(a0.into(), a1.into()),
-            Sys::POLL => self.sys_poll(a0.into(), a1, a2 as _).await,
-            Sys::ACCESS => self.sys_access(a0.into(), a1),
-            Sys::PIPE => self.sys_pipe(a0.into()),
-            Sys::SELECT => {
-                self.sys_select(a0, a1.into(), a2.into(), a3.into(), a4.into())
-                    .await
-            }
-            Sys::DUP2 => self.sys_dup2(a0.into(), a1.into()),
-            //            Sys::ALARM => self.unimplemented("alarm", Ok(0)),
-            Sys::FORK => self.sys_fork(),
-            Sys::VFORK => self.sys_vfork().await,
-            Sys::RENAME => self.sys_rename(a0.into(), a1.into()),
-            Sys::MKDIR => self.sys_mkdir(a0.into(), a1),
-            Sys::RMDIR => self.sys_rmdir(a0.into()),
-            Sys::LINK => self.sys_link(a0.into(), a1.into()),
-            Sys::UNLINK => self.sys_unlink(a0.into()),
-            Sys::READLINK => self.sys_readlink(a0.into(), a1.into(), a2),
-            Sys::CHMOD => self.unimplemented("chmod", Ok(0)),
-            Sys::CHOWN => self.unimplemented("chown", Ok(0)),
-            Sys::ARCH_PRCTL => self.sys_arch_prctl(a0 as _, a1),
-            Sys::TIME => self.sys_time(a0.into()),
-            Sys::CLONE => self.sys_clone(a0, a1, a2.into(), a4, a3.into()),
-            //            Sys::EPOLL_CREATE => self.sys_epoll_create(a0),
-            //            Sys::EPOLL_WAIT => self.sys_epoll_wait(a0, a1.into(), a2, a3),
             _ => self.unknown_syscall(sys_type),
         }
     }

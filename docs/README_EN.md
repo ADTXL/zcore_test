@@ -44,7 +44,6 @@ The project will be built with [xtask](https://github.com/matklad/cargo-xtask). 
 An extra [Makefile](../Makefile) provides make calls for compatibility with some legacy scripts.
 
 Currently tested development environments include Ubuntu 20.04, Ubuntu 22.04 and Debian 11.
-The libc tests for x86_64 cannot compile on Ubuntu22.04.
 If you do not need to flash to physical hardware, using WSL2 or other virtual machines does not operate any differently from the real machine.
 
 ### Commands

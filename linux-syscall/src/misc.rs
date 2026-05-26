@@ -6,23 +6,6 @@ use linux_object::time::*;
 use zircon_object::task::ThreadState;
 
 impl Syscall<'_> {
-    #[cfg(target_arch = "x86_64")]
-    /// set architecture-specific thread state
-    /// for x86_64 currently
-    pub fn sys_arch_prctl(&mut self, code: i32, addr: usize) -> SysResult {
-        const ARCH_SET_FS: i32 = 0x1002;
-        match code {
-            ARCH_SET_FS => {
-                info!("sys_arch_prctl: set FSBASE to {:#x}", addr);
-                self.thread.with_context(|ctx| {
-                    ctx.set_field(kernel_hal::context::UserContextField::ThreadPointer, addr)
-                })?;
-                Ok(0)
-            }
-            _ => Err(LxError::EINVAL),
-        }
-    }
-
     /// get name and information about current kernel
     pub fn sys_uname(&self, buf: UserOutPtr<u8>) -> SysResult {
         info!("uname: buf={:?}", buf);
@@ -33,9 +16,7 @@ impl Syscall<'_> {
 
         let vdso_const = kernel_hal::vdso::vdso_constants();
 
-        let arch = if cfg!(target_arch = "x86_64") {
-            "x86_64"
-        } else if cfg!(target_arch = "aarch64") {
+        let arch = if cfg!(target_arch = "aarch64") {
             "aarch64"
         } else if cfg!(target_arch = "riscv64") {
             "riscv64"

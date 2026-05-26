@@ -122,9 +122,7 @@ fn handle_signal(
     thread.backup_context(*ctx, siginfo_ptr, uctx_ptr);
     // set user return address as `action.restorer`
     cfg_if! {
-        if #[cfg(target_arch = "x86_64")] {
-            sp = push_stack::<usize>(sp & !0xF, action.restorer);
-        } else {
+        {
             ctx.set_ra(action.restorer);
         }
     }
@@ -221,9 +219,7 @@ async fn handle_user_trap(thread: &CurrentThread, mut ctx: Box<UserContext>) -> 
 fn syscall_num(ctx: &UserContext) -> usize {
     let regs = ctx.general();
     cfg_if! {
-        if #[cfg(target_arch = "x86_64")] {
-            regs.rax
-        } else if #[cfg(target_arch = "aarch64")] {
+        if #[cfg(target_arch = "aarch64")] {
             regs.x8
         } else if #[cfg(target_arch = "riscv64")] {
             regs.a7
@@ -236,9 +232,7 @@ fn syscall_num(ctx: &UserContext) -> usize {
 fn syscall_args(ctx: &UserContext) -> [usize; 6] {
     let regs = ctx.general();
     cfg_if! {
-        if #[cfg(target_arch = "x86_64")] {
-            [regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9]
-        } else if #[cfg(target_arch = "aarch64")] {
+        if #[cfg(target_arch = "aarch64")] {
             [regs.x0, regs.x1, regs.x2, regs.x3, regs.x4, regs.x5]
         } else if #[cfg(target_arch = "riscv64")] {
             [regs.a0, regs.a1, regs.a2, regs.a3, regs.a4, regs.a5]

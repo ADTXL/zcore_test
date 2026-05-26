@@ -1,8 +1,8 @@
 MODE ?= debug
 
-zbi_in := ../prebuilt/zircon/x64/bringup.zbi
+zbi_in := ../prebuilt/zircon/arm64/bringup.zbi
 zbi_out := target/zcore-user.zbi
-build_dir := target/x86_64-fuchsia/$(MODE)
+build_dir := target/aarch64-fuchsia/$(MODE)
 bootfs := $(build_dir)/bootfs
 bins := $(patsubst src/bin/%.rs, $(bootfs)/bin/%, $(wildcard src/bin/*.rs))
 
@@ -11,9 +11,9 @@ ifeq ($(MODE), release)
 endif
 
 ifeq ($(shell uname), Darwin)
-  zbi_cli := ../prebuilt/zircon/x64/zbi-macos
+  zbi_cli := ../prebuilt/zircon/arm64/zbi-macos
 else
-  zbi_cli := ../prebuilt/zircon/x64/zbi-linux
+  zbi_cli := ../prebuilt/zircon/arm64/zbi-linux
 endif
 
 .PHONY: zbi

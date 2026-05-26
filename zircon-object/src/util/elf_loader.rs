@@ -192,7 +192,7 @@ impl ElfExt for ElfFile<'_> {
         let base = vmar.addr();
         let dynsym = self.dynsym()?;
         for entry in entries.iter() {
-            // x86_64
+            // common ELF relocation types
             const REL_GOT: u32 = 6;
             const REL_PLT: u32 = 7;
             const REL_RELATIVE: u32 = 8;

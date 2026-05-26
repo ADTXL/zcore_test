@@ -7,33 +7,7 @@ mod action;
 pub use action::*;
 
 cfg_if::cfg_if! {
-    if #[cfg(target_arch = "x86_64")] {
-        #[repr(C)]
-        #[derive(Clone, Debug, Eq, PartialEq)]
-        pub struct FpregsMem {
-            mem: [usize; 64]
-        }
-
-        impl Default for FpregsMem {
-            fn default() -> Self {
-                Self {
-                    mem: [0; 64]
-                }
-            }
-        }
-        /// See musl struct __ucontext
-        #[repr(C)]
-        #[derive(Clone, Default, Debug)]
-        pub struct SignalUserContext {
-            pub flags: usize,
-            pub link: usize,
-            pub stack: SignalStack,
-            pub context: MachineContext,
-            pub sig_mask: Sigset,
-            pub _pad: [u64; 15], // very strange, maybe a bug of musl libc
-            pub fpregs_mem: FpregsMem,
-        }
-    } else if #[cfg(target_arch = "riscv64")] {
+    if #[cfg(target_arch = "riscv64")] {
         /// See musl struct __ucontext
         #[repr(C)]
         #[derive(Clone, Default, Debug)]
@@ -61,62 +35,7 @@ cfg_if::cfg_if! {
 }
 
 cfg_if::cfg_if! {
-    if #[cfg(target_arch = "x86_64")] {
-        /// struct mcontext
-        #[repr(C)]
-        #[derive(Clone, Debug, Default, Eq, PartialEq)]
-        pub struct MachineContext {
-            // gregs
-            pub r8: usize,
-            pub r9: usize,
-            pub r10: usize,
-            pub r11: usize,
-            pub r12: usize,
-            pub r13: usize,
-            pub r14: usize,
-            pub r15: usize,
-            pub rdi: usize,
-            pub rsi: usize,
-            pub rbp: usize,
-            pub rbx: usize,
-            pub rdx: usize,
-            pub rax: usize,
-            pub rcx: usize,
-            pub rsp: usize,
-            pub rip: usize,
-            pub eflags: usize,
-            pub cs: u16,
-            pub gs: u16,
-            pub fs: u16,
-            pub _pad: u16,
-            pub err: usize,
-            pub trapno: usize,
-            pub oldmask: usize,
-            pub cr2: usize,
-            // fpregs
-            // TODO
-            pub fpstate: usize,
-            // reserved
-            pub _reserved1: [usize; 8],
-        }
-
-        impl MachineContext {
-            pub fn new(pc : usize) -> Self {
-                Self {
-                    rip: pc,
-                    ..Default::default()
-                }
-            }
-
-            pub fn get_pc(&self) -> usize {
-                self.rip
-            }
-
-            pub fn set_pc(&mut self, pc: usize) {
-                self.rip = pc;
-            }
-        }
-    } else if #[cfg(target_arch = "riscv64")] {
+    if #[cfg(target_arch = "riscv64")] {
         /// struct mcontext
         #[repr(C, align(16))]
         #[derive(Clone, Debug, Eq, PartialEq)]

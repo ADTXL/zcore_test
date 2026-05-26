@@ -143,16 +143,7 @@ impl Syscall<'_> {
         let proc = self.thread.proc();
         proc.get_object::<Resource>(resource)?
             .validate(ResourceKind::ROOT)?;
-        cfg_if::cfg_if! {
-            if #[cfg(all(target_arch = "x86_64", target_os = "none"))] {
-                let (acpi_rsdp, smbios) = kernel_hal::x86_64::pc_firmware_tables();
-                acpi_rsdp_ptr.write(acpi_rsdp)?;
-                smbios_ptr.write(smbios)?;
-                Ok(())
-            } else {
-                Err(ZxError::NOT_SUPPORTED)
-            }
-        }
+        Err(ZxError::NOT_SUPPORTED)
     }
 
     /// Creates an interrupt object which represents a physical or virtual interrupt.

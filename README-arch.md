@@ -74,7 +74,7 @@ Use docker container as standand develop environment, please refer to [tootls/do
 - step 1: Compile and Run Zircon shell
 
   ```sh
-  cargo run --release --features "zircon libos" -- prebuilt/zircon/x64/bringup.zbi
+  cargo run --release --features "zircon libos" -- prebuilt/zircon/aarch64/bringup.zbi
   ```
 
   The `graphic` and `LOG` options are the same as Linux.
@@ -170,24 +170,6 @@ cd scripts && python3 core-tests.py
 # Check `zircon/test-result.txt` for results.
 ```
 
-#### x86-64 Linux related
-
-Run Linux musl libc-tests for CI:
-
-```sh
-##  Prepare rootfs with libc-test apps
-make baremetal-test-img
-## Build zCore kernel
-cd zCore && make build MODE=release LINUX=1 ARCH=x86_64
-## Testing
-cd scripts && python3 baremetal-libc-test.py
-##
-```
-
-You can use [`scripts/baremetal-libc-test-ones.py`](./scripts/baremetal-libc-test-ones.py) & [`scripts/linux/baremetal-test-ones.txt`](./scripts/linux/baremetal-test-ones.txt) to test specified apps.
-
-[`scripts/linux/baremetal-test-fail.txt`](./scripts/linux/baremetal-test-fail.txt) includes all failed x86-64 apps (We need YOUR HELP to fix bugs!)
-
 #### riscv-64 Linux related
 
 Run Linux musl libc-tests for CI:
@@ -211,7 +193,7 @@ snake game: <https://github.com/rcore-os/rcore-user/blob/master/app/src/snake.c>
 
 ### Step1: compile usr app
 
-We can use musl-gcc compile it in x86_64 mode
+We can use musl-gcc to compile the application
 
 ### Step2: change zcore for run snake app first.
 

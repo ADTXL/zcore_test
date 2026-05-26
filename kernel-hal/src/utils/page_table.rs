@@ -169,7 +169,6 @@ impl<L: PageTableLevel, PTE: GenericPTE> PageTableImpl<L, PTE> {
         );
     }
 
-    #[cfg(not(target_arch = "x86_64"))]
     pub(crate) unsafe fn activate(&mut self) {
         crate::vm::activate_paging(self.table_phys());
     }

@@ -22,34 +22,6 @@ const PCI_CAP_ID_MSI: u8 = 0x05;
 
 struct PortOpsImpl;
 
-#[cfg(target_arch = "x86_64")]
-use x86_64::instructions::port::Port;
-
-#[cfg(target_arch = "x86_64")]
-impl PortOps for PortOpsImpl {
-    unsafe fn read8(&self, port: u16) -> u8 {
-        Port::new(port).read()
-    }
-    unsafe fn read16(&self, port: u16) -> u16 {
-        Port::new(port).read()
-    }
-    unsafe fn read32(&self, port: u32) -> u32 {
-        Port::new(port as u16).read()
-    }
-    unsafe fn write8(&self, port: u16, val: u8) {
-        Port::new(port).write(val);
-    }
-    unsafe fn write16(&self, port: u16, val: u16) {
-        Port::new(port).write(val);
-    }
-    unsafe fn write32(&self, port: u32, val: u32) {
-        Port::new(port as u16).write(val);
-    }
-}
-
-#[cfg(target_arch = "x86_64")]
-const PCI_BASE: usize = 0; //Fix me
-
 #[cfg(any(target_arch = "mips", target_arch = "riscv64"))]
 use super::{read, write};
 
@@ -62,9 +34,6 @@ const PCI_BASE: usize = 0x30000000;
 const E1000_BASE: usize = 0x40000000;
 // riscv64 Qemu
 
-#[cfg(target_arch = "x86_64")]
-const PCI_ACCESS: CSpaceAccessMethod = CSpaceAccessMethod::IO;
-#[cfg(not(target_arch = "x86_64"))]
 const PCI_ACCESS: CSpaceAccessMethod = CSpaceAccessMethod::MemoryMapped(PCI_BASE as *mut u8);
 
 #[cfg(any(target_arch = "mips", target_arch = "riscv64"))]

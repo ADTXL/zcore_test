@@ -183,23 +183,12 @@ hal_fn_def! {
         /// Fill random bytes to the buffer
         #[allow(unused_variables)]
         pub fn fill_random(buf: &mut [u8]) {
-            cfg_if! {
-                if #[cfg(target_arch = "x86_64")] {
-                    // TODO: optimize
-                    for x in buf.iter_mut() {
-                        let mut r = 0;
-                        unsafe { core::arch::x86_64::_rdrand16_step(&mut r) };
-                        *x = r as _;
-                    }
-                } else {
-                    static mut SEED: u64 = 0xdead_beef_cafe_babe;
-                    for x in buf.iter_mut() {
-                        unsafe {
-                            // from musl
-                            SEED = SEED.wrapping_mul(0x5851_f42d_4c95_7f2d);
-                            *x = (SEED >> 33) as u8;
-                        }
-                    }
+            static mut SEED: u64 = 0xdead_beef_cafe_babe;
+            for x in buf.iter_mut() {
+                unsafe {
+                    // from musl
+                    SEED = SEED.wrapping_mul(0x5851_f42d_4c95_7f2d);
+                    *x = (SEED >> 33) as u8;
                 }
             }
         }

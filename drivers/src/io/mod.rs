@@ -8,12 +8,8 @@
 use core::ops::{BitAnd, BitOr, Not};
 
 mod mmio;
-#[cfg(target_arch = "x86_64")]
-mod pmio;
 
 pub use mmio::Mmio;
-#[cfg(target_arch = "x86_64")]
-pub use pmio::Pmio;
 
 // 用于处理外设地址空间访问的接口。
 /// An interface for dealing with device address space access.

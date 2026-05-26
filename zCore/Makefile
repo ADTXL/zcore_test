@@ -1,6 +1,6 @@
 ################ Arguments ################
 
-ARCH ?= x86_64
+ARCH ?= aarch64
 PLATFORM ?= qemu
 MODE ?= release
 LOG ?= warn
@@ -20,12 +20,10 @@ SMP ?= 1
 ACCEL ?=
 
 NET ?=
-OBJDUMP :=
 OBJCOPY ?= rust-objcopy --binary-architecture=$(ARCH)
+OBJDUMP :=
 
-ifeq ($(ARCH), x86_64)
-  OBJDUMP := rust-objdump --print-imm-hex --x86-asm-syntax=intel
-else ifeq ($(ARCH), riscv64)
+ifeq ($(ARCH), riscv64)
   OBJDUMP := riscv64-linux-musl-objdump
 endif
 
@@ -39,8 +37,8 @@ ifeq ($(LINUX), 1)
   user_img := $(ARCH).img
 else ifeq ($(USER), 1)
   user_img := ../zircon-user/target/zcore-user.zbi
-else
-  user_img := ../prebuilt/zircon/x64/$(ZBI).zbi
+else ifeq ($(ARCH), aarch64)
+  user_img := ../prebuilt/zircon/arm64/$(ZBI).zbi
 endif
 
 ifeq ($(PLATFORM), libos)
@@ -156,17 +154,7 @@ endif
 
 qemu_opts := -smp $(SMP)
 
-ifeq ($(ARCH), x86_64)
-  qemu_opts += \
-		-machine q35 \
-		-cpu Haswell,+smap,-check,-fsgsbase \
-		-m 1G \
-		-serial mon:stdio \
-		-serial file:/tmp/serial.out \
-		-drive format=raw,if=pflash,readonly=on,file=$(ovmf) \
-		-drive format=raw,file=fat:rw:$(esp) \
-		-nic none
-else ifeq ($(ARCH), riscv64)
+ifeq ($(ARCH), riscv64)
   qemu_opts += \
 		-machine virt \
 		-bios default \
@@ -196,18 +184,14 @@ qemu_opts += \
 	# -netdev tap,id=net1,script=ifup.sh,downscript=ifdown.sh
 
 ifeq ($(DISK), on)
-  ifeq ($(ARCH), x86_64)
-    qemu_opts += -device ide-hd,bus=ahci.0,drive=userdisk
-  else ifeq ($(ARCH), riscv64)
+  ifeq ($(ARCH), riscv64)
     qemu_opts += -device virtio-blk-device,drive=userdisk
   endif
   qemu_opts += -drive format=qcow2,id=userdisk,if=none,file=$(qemu_disk)
 endif
 
 ifeq ($(GRAPHIC), on)
-  ifeq ($(ARCH), x86_64)
-    qemu_opts += -vga virtio # disable std VGA for zircon mode to avoid incorrect graphic rendering
-  else ifeq ($(ARCH), riscv64)
+  ifeq ($(ARCH), riscv64)
     qemu_opts += \
 		-device virtio-gpu-device \
 		-device virtio-keyboard-device \
@@ -217,17 +201,7 @@ else
   qemu_opts += -display none
 endif
 
-ifeq ($(ARCH), x86_64)
-  ifeq ($(PLATFORM), qemu)
-    ifeq ($(ACCEL), 1)
-      ifeq ($(shell uname), Darwin)
-        qemu_opts += -accel hvf
-      else
-        qemu_opts += -accel kvm -cpu host,migratable=no,+invtsc
-      endif
-	endif
-  endif
-endif
+
 
 ################ Make targets ################
 
@@ -260,10 +234,6 @@ endif
 
 .PHONY: justrun
 justrun: $(qemu_disk)
-ifeq ($(ARCH), x86_64)
-	$(sed) 's#initramfs=.*#initramfs=\\EFI\\zCore\\$(notdir $(user_img))#' $(esp)/EFI/Boot/rboot.conf
-	$(sed) 's#cmdline=.*#cmdline=$(CMDLINE)#' $(esp)/EFI/Boot/rboot.conf
-endif
 ifeq ($(ARCH), aarch64)
 	$(sed) 's#\"cmdline\":.*#\"cmdline\": \"$(CMDLINE)\",#' disk/EFI/Boot/Boot.json
 endif
@@ -278,19 +248,13 @@ else
 endif
 
 
-ifeq ($(ARCH), x86_64)
-  gdb := gdb
-else ifeq ($(ARCH), riscv64)
+ifeq ($(ARCH), riscv64)
   gdb := riscv64-unknown-elf-gdb
 endif
 
 .PHONY: debugrun
 debugrun: $(qemu_disk)
 	cp .gdbinit_$(ARCH) .gdbinit
-ifeq ($(ARCH), x86_64)
-	$(sed) 's#initramfs=.*#initramfs=\\EFI\\zCore\\$(notdir $(user_img))#' $(esp)/EFI/Boot/rboot.conf
-	$(sed) 's#cmdline=.*#cmdline=$(CMDLINE)#' $(esp)/EFI/Boot/rboot.conf
-endif
 ifeq ($(ARCH), aarch64)
 	$(sed) 's#\"cmdline\":.*#\"cmdline\": \"$(CMDLINE)\",#' disk/EFI/Boot/Boot.json
 endif
@@ -326,21 +290,9 @@ clean:
 
 .PHONY: bootloader
 bootloader:
-ifeq ($(ARCH), x86_64)
-	@cd ../rboot && make build
-endif
 
 $(kernel_img): kernel bootloader
-ifeq ($(ARCH), x86_64)
-  ifeq ($(USER), 1)
-	make -C ../zircon-user
-  endif
-	mkdir -p $(esp)/EFI/zCore $(esp)/EFI/Boot
-	cp ../rboot/target/x86_64-unknown-uefi/release/rboot.efi $(esp)/EFI/Boot/BootX64.efi
-	cp rboot.conf $(esp)/EFI/Boot/rboot.conf
-	cp $(kernel_elf) $(esp)/EFI/zCore/zcore.elf
-	cp $(user_img) $(esp)/EFI/zCore/
-else ifeq ($(ARCH), riscv64)
+ifeq ($(ARCH), riscv64)
 	$(OBJCOPY) $(kernel_elf) --strip-all -O binary $@
 endif
 

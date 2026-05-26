@@ -327,7 +327,7 @@ fn install_zircon_prebuilt() {
     use os_xtask_utils::{dir, CommandExt, Tar};
     const URL: &str =
         "https://github.com/rcore-os/zCore/releases/download/prebuilt-2208/prebuilt.tar.xz";
-    let tar = Arch::X86_64.origin().join("prebuilt.tar.xz");
+    let tar = Arch::Aarch64.origin().join("prebuilt.tar.xz");
     wget(URL, &tar);
     // 解压到目标路径
     let dir = PROJECT_DIR.join("prebuilt");
@@ -397,7 +397,7 @@ fn check_style() {
         .invoke();
 
     println!("Check bare-metal");
-    for arch in [Arch::Riscv64, Arch::X86_64, Arch::Aarch64] {
+    for arch in [Arch::Riscv64, Arch::Aarch64] {
         println!("    Checks {} bare-metal", arch.name());
         BuildConfig::from_args(BuildArgs {
             machine: format!("virt-{}", arch.name()),
@@ -432,13 +432,13 @@ mod libos {
         dircpy::copy_dir(target.join("rootfs"), ROOTFS).unwrap();
     }
 
-    /// 将 x86_64 的 libc-test 复制到 libos。
+    /// 将 aarch64 的 libc-test 复制到 libos。
     pub(super) fn put_libc_test() {
         const TARGET: &str = "rootfs/libos/libc-test";
-        let x86_64 = LinuxRootfs::new(Arch::X86_64);
-        x86_64.put_libc_test();
+        let aarch64 = LinuxRootfs::new(Arch::Aarch64);
+        aarch64.put_libc_test();
         dir::clear(TARGET).unwrap();
-        dircpy::copy_dir(x86_64.path().join("libc-test"), TARGET).unwrap();
+        dircpy::copy_dir(aarch64.path().join("libc-test"), TARGET).unwrap();
     }
 
     /// libos 模式执行应用程序。

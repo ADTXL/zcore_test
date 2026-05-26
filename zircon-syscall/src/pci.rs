@@ -56,24 +56,7 @@ impl Syscall<'_> {
                 "pci.cfg_pio_rw: handle={:#x}, addr={:x}:{:x}:{:x}, offset={:#x}, width={:#x}, write={:#}",
                 handle, bus, dev, func, offset, width, write
             );
-        cfg_if::cfg_if! {
-            if #[cfg(all(target_arch = "x86_64", target_os = "none"))] {
-                use zircon_object::dev::pci::{pio_config_read, pio_config_write};
-                let proc = self.thread.proc();
-                proc.get_object::<Resource>(handle)?
-                    .validate(ResourceKind::ROOT)?;
-                if write {
-                    let value = value_ptr.read()?;
-                    pio_config_write(bus, dev, func, offset, value, width)?;
-                } else {
-                    let value = pio_config_read(bus, dev, func, offset, width)?;
-                    value_ptr.write(value)?;
-                }
-                Ok(())
-            } else {
-                Err(ZxError::NOT_SUPPORTED)
-            }
-        }
+        Err(ZxError::NOT_SUPPORTED)
     }
 
     // TODO: review
@@ -104,28 +87,6 @@ impl Syscall<'_> {
         let addr_win = &mut addr_windows[0];
         if addr_win.bus_start != 0 || addr_win.bus_start > addr_win.bus_end {
             return Err(ZxError::INVALID_ARGS);
-        }
-        // Some systems will report overly large PCIe config regions
-        // that collide with architectural registers.
-        #[cfg(target_arch = "x86_64")]
-        {
-            let num_buses = (addr_win.bus_end - addr_win.bus_start) as u64 + 1;
-            let mut end: u64 = addr_win.base + num_buses * PCIE_ECAM_BYTES_PER_BUS as u64;
-            let high_limit: u64 = 0xfec0_0000;
-            if end > high_limit {
-                end = high_limit;
-                if end < addr_win.base {
-                    return Err(ZxError::INVALID_ARGS);
-                }
-                addr_win.size =
-                    ((end - addr_win.base) & (PCIE_ECAM_BYTES_PER_BUS as u64 - 1)) as usize;
-                let new_bus_end: usize =
-                    addr_win.size / PCIE_ECAM_BYTES_PER_BUS + addr_win.bus_start as usize - 1;
-                if new_bus_end as usize >= PCIE_MAX_BUSSES {
-                    return Err(ZxError::INVALID_ARGS);
-                }
-                addr_win.bus_end = new_bus_end as u8;
-            }
         }
         if addr_win.cfg_space_type == PCI_CFG_SPACE_TYPE_MMIO {
             if addr_win.size < PCIE_ECAM_BYTES_PER_BUS

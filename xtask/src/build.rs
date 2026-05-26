@@ -212,7 +212,6 @@ impl QemuArgs {
                     .args(&["-bios", "default"])
                     .args(&["-serial", "mon:stdio"]);
             }
-            Arch::X86_64 => todo!(),
             Arch::Aarch64 => {
                 fs::copy(obj, INNER.join("disk").join("os")).unwrap();
                 qemu.args(&["-cpu", "cortex-a72"])
@@ -287,7 +286,6 @@ impl GdbArgs {
                     .args(&["-ex", &format!("target remote localhost:{}", self.port)])
                     .invoke();
             }
-            Arch::X86_64 => todo!(),
         }
     }
 }

@@ -23,14 +23,7 @@ mod handler;
 mod platform;
 mod utils;
 
-cfg_if! {
-    if #[cfg(target_arch = "x86_64")] {
-        #[path = "memory_x86_64.rs"]
-        mod memory;
-    } else {
-        mod memory;
-    }
-}
+mod memory;
 
 static STARTED: AtomicBool = AtomicBool::new(false);
 

@@ -102,12 +102,8 @@ impl From<rvm::IoPacket> for PacketGuestIo {
 
 impl From<rvm::MmioPacket> for PacketGuestMem {
     fn from(mem: rvm::MmioPacket) -> Self {
-        #[cfg(target_arch = "x86_64")]
         Self {
             addr: mem.addr,
-            inst_len: mem.inst_len,
-            inst_buf: mem.inst_buf,
-            default_operand_size: mem.default_operand_size,
             ..Default::default()
         }
     }

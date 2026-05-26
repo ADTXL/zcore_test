@@ -46,18 +46,6 @@ impl Syscall<'_> {
         Ok(0)
     }
 
-    /// get time in seconds
-    #[cfg(target_arch = "x86_64")]
-    pub fn sys_time(&mut self, mut time: UserOutPtr<u64>) -> SysResult {
-        info!("time: time: {:?}", time);
-        if time.is_null() {
-            return Err(LxError::EINVAL);
-        }
-        let sec = TimeSpec::now().sec;
-        time.write(sec as u64)?;
-        Ok(sec)
-    }
-
     /// JUST FOR TEST, DO NOT USE IT
     pub fn sys_block_in_kernel(&self) -> SysResult {
         // DEAD LOOP

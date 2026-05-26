@@ -64,17 +64,6 @@ pub struct PacketGuestBell {
     pub _reserved2: u64,
 }
 
-#[cfg(target_arch = "x86_64")]
-#[repr(C)]
-#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
-pub struct PacketGuestMem {
-    pub addr: u64,
-    pub inst_len: u8,
-    pub inst_buf: [u8; 15],
-    pub default_operand_size: u8,
-    pub _reserved: [u8; 7],
-}
-
 #[cfg(target_arch = "aarch64")]
 #[repr(C)]
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]

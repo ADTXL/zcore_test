@@ -8,7 +8,7 @@ async fn test(cmdline: &str) -> i64 {
     kernel_hal::init();
 
     let args: Vec<String> = cmdline.split(' ').map(|s| s.into()).collect();
-    let envs = vec!["PATH=/usr/sbin:/usr/bin:/sbin:/bin:/usr/x86_64-alpine-linux-musl/bin".into()]; // TODO
+    let envs = vec!["PATH=/usr/sbin:/usr/bin:/sbin:/bin:/usr/aarch64-alpine-linux-musl/bin".into()]; // TODO
     let hostfs = HostFS::new(LIBOS_ROOTFS);
     let proc = zcore_loader::linux::run(args, envs, hostfs);
     proc.wait_for_exit().await

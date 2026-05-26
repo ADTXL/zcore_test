@@ -43,56 +43,6 @@ pub enum TrapReason {
 pub const TIMER_INTERRUPT_VEC: usize = crate::timer_interrupt_vector();
 
 impl TrapReason {
-    /// Get [`TrapReason`] from `trap_num` and `error_code` in trap frame for x86.
-    #[cfg(target_arch = "x86_64")]
-    pub fn from(trap_num: usize, error_code: usize) -> Self {
-        use x86::irq::*;
-        const X86_INT_BASE: u8 = 0x20;
-        const X86_INT_MAX: u8 = 0xff;
-
-        // See https://github.com/rcore-os/trapframe-rs/blob/25cb5282aca8ceb4f7fc4dcd61e7e73b67d9ae00/src/arch/x86_64/syscall.S#L117
-        if trap_num == 0x100 {
-            return Self::Syscall;
-        }
-        match trap_num as u8 {
-            DEBUG_VECTOR => Self::HardwareBreakpoint,
-            BREAKPOINT_VECTOR => Self::SoftwareBreakpoint,
-            INVALID_OPCODE_VECTOR => Self::UndefinedInstruction,
-            ALIGNMENT_CHECK_VECTOR => Self::UnalignedAccess,
-            PAGE_FAULT_VECTOR => {
-                bitflags::bitflags! {
-                    struct PageFaultErrorCode: u32 {
-                        const PRESENT =     1 << 0;
-                        const WRITE =       1 << 1;
-                        const USER =        1 << 2;
-                        const RESERVED =    1 << 3;
-                        const INST =        1 << 4;
-                    }
-                }
-                let fault_vaddr = x86_64::registers::control::Cr2::read().as_u64() as _;
-                let code = PageFaultErrorCode::from_bits_truncate(error_code as u32);
-                let mut flags = MMUFlags::empty();
-                if code.contains(PageFaultErrorCode::WRITE) {
-                    flags |= MMUFlags::WRITE
-                } else {
-                    flags |= MMUFlags::READ
-                }
-                if code.contains(PageFaultErrorCode::USER) {
-                    flags |= MMUFlags::USER
-                }
-                if code.contains(PageFaultErrorCode::INST) {
-                    flags |= MMUFlags::EXECUTE
-                }
-                if code.contains(PageFaultErrorCode::RESERVED) {
-                    error!("page table entry has reserved bits set!");
-                }
-                Self::PageFault(fault_vaddr, flags)
-            }
-            vec @ X86_INT_BASE..=X86_INT_MAX => Self::Interrupt(vec as usize),
-            _ => Self::GernelFault(trap_num),
-        }
-    }
-
     #[cfg(target_arch = "riscv64")]
     pub fn from(scause: riscv::register::scause::Scause) -> Self {
         use riscv::register::scause::{Exception, Trap};
@@ -178,16 +128,7 @@ impl UserContext {
     /// Eg: ctx.setup_uspace(pc_, sp_, &[arg1, arg2, 0])
     pub fn setup_uspace(&mut self, pc: usize, sp: usize, args: &[usize; 3]) {
         cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                self.0.general.rip = pc;
-                self.0.general.rsp = sp;
-                self.0.general.rdi = args[0];
-                self.0.general.rsi = args[1];
-                self.0.general.rdx = args[2];
-                // IOPL = 3, IF = 1
-                // FIXME: set IOPL = 0 when IO port bitmap is supporte
-                self.0.general.rflags = 0x3000 | 0x200 | 0x2;
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 self.0.elr = pc;
                 self.0.sp = sp;
                 self.0.general.x0 = args[0];
@@ -213,8 +154,6 @@ impl UserContext {
         cfg_if! {
             if #[cfg(target_arch = "riscv64")] {
                 self.0.general.ra = _ra;
-            } else if #[cfg(target_arch = "x86_64")] {
-                error!("Please set return addr via stack!");
             } else if #[cfg(target_arch = "aarch64")] {
                 self.0.general.x30 = _ra;
             } else {
@@ -234,19 +173,10 @@ impl UserContext {
         }
     }
 
-    /// Returns the `error_code` field of the context.
-    #[cfg(any(target_arch = "x86_64", doc))]
-    #[doc(cfg(target_arch = "x86_64"))]
-    pub fn error_code(&self) -> usize {
-        self.0.error_code
-    }
-
     /// Returns [`TrapReason`] according to the context.
     pub fn trap_reason(&self) -> TrapReason {
         cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                TrapReason::from(self.0.trap_num, self.0.error_code)
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 TrapReason::from(self.0.trap_num)
             } else if #[cfg(target_arch = "riscv64")] {
                 TrapReason::from(riscv::register::scause::read())
@@ -258,9 +188,7 @@ impl UserContext {
     /// Returns a `usize` representing the trap reason. (i.e., IDT vector for x86, `scause` for RISC-V)
     pub fn raw_trap_reason(&self) -> usize {
         cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                self.0.trap_num
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 unimplemented!() // ESR_EL1
             } else if #[cfg(target_arch = "riscv64")] {
                 riscv::register::scause::read().bits()
@@ -282,14 +210,7 @@ impl UserContext {
 
     fn field_ref(&mut self, which: UserContextField) -> &mut usize {
         cfg_if! {
-            if #[cfg(target_arch = "x86_64")] {
-                match which {
-                    UserContextField::InstrPointer => &mut self.0.general.rip,
-                    UserContextField::StackPointer => &mut self.0.general.rsp,
-                    UserContextField::ThreadPointer => &mut self.0.general.fsbase,
-                    UserContextField::ReturnValue => &mut self.0.general.rax,
-                }
-            } else if #[cfg(target_arch = "aarch64")] {
+            if #[cfg(target_arch = "aarch64")] {
                 match which {
                     UserContextField::InstrPointer => &mut self.0.elr,
                     UserContextField::StackPointer => &mut self.0.sp,
@@ -343,53 +264,4 @@ impl fmt::Debug for UserContext {
     }
 }
 
-cfg_if! {
-    if #[cfg(target_arch = "x86_64")] {
-        /// X86 vector registers.
-        #[repr(C, align(16))]
-        #[derive(Debug, Copy, Clone)]
-        pub struct VectorRegs {
-            pub fcw: u16,
-            pub fsw: u16,
-            pub ftw: u8,
-            pub _pad0: u8,
-            pub fop: u16,
-            pub fip: u32,
-            pub fcs: u16,
-            pub _pad1: u16,
 
-            pub fdp: u32,
-            pub fds: u16,
-            pub _pad2: u16,
-            pub mxcsr: u32,
-            pub mxcsr_mask: u32,
-
-            pub mm: [U128; 8],
-            pub xmm: [U128; 16],
-            pub reserved: [U128; 3],
-            pub available: [U128; 3],
-        }
-
-        // https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol1/o_7281d5ea06a5b67a-274.html
-        impl Default for VectorRegs {
-            fn default() -> Self {
-                VectorRegs {
-                    fcw: 0x37f,
-                    mxcsr: 0x1f80,
-                    ..unsafe { core::mem::zeroed() }
-                }
-            }
-        }
-
-        // workaround: libcore has bug on Debug print u128 ??
-        #[derive(Default, Clone, Copy)]
-        #[repr(C, align(16))]
-        pub struct U128(pub [u64; 2]);
-
-        impl fmt::Debug for U128 {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "{:#016x}_{:016x}", self.0[1], self.0[0])
-            }
-        }
-    }
-}
