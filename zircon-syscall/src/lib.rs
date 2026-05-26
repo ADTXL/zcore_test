@@ -255,6 +255,7 @@ impl Syscall<'_> {
             Sys::NANOSLEEP => self.sys_nanosleep(a0.into()).await,
             Sys::CLOCK_CREATE => self.sys_clock_create(a0 as _, a1.into(), a2.into()),
             Sys::CLOCK_GET => self.sys_clock_get(a0 as _, a1.into()),
+            Sys::CLOCK_GET_NEW => self.sys_clock_get(a0 as _, a1.into()),
             Sys::CLOCK_GET_MONOTONIC => self.sys_clock_get_monotonic(),
             Sys::CLOCK_READ => self.sys_clock_read(a0 as _, a1.into()),
             Sys::CLOCK_ADJUST => self.sys_clock_adjust(a0 as _, a1 as _, a2 as _),
