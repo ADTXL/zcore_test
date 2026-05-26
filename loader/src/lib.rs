@@ -23,3 +23,6 @@ cfg_if! {
         pub mod zircon;
     }
 }
+
+/// Simple init process loader for custom userspace programs.
+pub mod simple_init;

@@ -50,8 +50,9 @@ fn primary_main(config: kernel_hal::KernelConfig) {
             let proc = zcore_loader::linux::run(args, envs, rootfs);
             utils::wait_for_exit(Some(proc))
         } else if #[cfg(feature = "zircon")] {
-            let zbi = fs::zbi();
-            let proc = zcore_loader::zircon::run_userboot(zbi, &options.cmdline); //报错信息:这里会报page fault。
+            // Load our own userspace init program instead of prebuilt Fuchsia binaries
+            static INIT_ELF: &[u8] = include_bytes!("../../user/hello.elf");
+            let proc = zcore_loader::simple_init::run_simple_init(INIT_ELF, "init");
             utils::wait_for_exit(Some(proc))
         } else {
             panic!("One of the features `linux` or `zircon` must be specified!");

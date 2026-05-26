@@ -27,10 +27,15 @@ pub fn init_early() {
 }
 
 pub fn init() {
-    let virtio_blk = Arc::new(
-        VirtIoBlk::new(unsafe { &mut *(phys_to_virt(VIRTIO_BASE) as *mut VirtIOHeader) }).unwrap(),
-    );
-    drivers::add_device(Device::Block(virtio_blk));
+    // Try to initialize virtio block device (optional, not needed for simple init)
+    match VirtIoBlk::new(unsafe { &mut *(phys_to_virt(VIRTIO_BASE) as *mut VirtIOHeader) }) {
+        Ok(blk) => {
+            drivers::add_device(Device::Block(Arc::new(blk)));
+        }
+        Err(e) => {
+            warn!("virtio block device not available: {:?}", e);
+        }
+    }
 }
 
 fn handle_uart_irq() {
