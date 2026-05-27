@@ -51,7 +51,7 @@ fn primary_main(config: kernel_hal::KernelConfig) {
             utils::wait_for_exit(Some(proc))
         } else if #[cfg(feature = "zircon")] {
             // Load our own userspace init program instead of prebuilt Fuchsia binaries
-            static INIT_ELF: &[u8] = include_bytes!("../../user/hello.elf");
+            static INIT_ELF: &[u8] = include_bytes!("../../user/shell.elf");
             let proc = zcore_loader::simple_init::run_simple_init(INIT_ELF, "init");
             utils::wait_for_exit(Some(proc))
         } else {
