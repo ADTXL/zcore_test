@@ -148,6 +148,8 @@ impl UserContext {
         cfg_if! {
             if #[cfg(target_arch = "aarch64")] {
                 TrapReason::from(self.0.trap_num)
+            } else {
+                unimplemented!("trap_reason: unsupported architecture")
             }
         }
     }
@@ -156,6 +158,8 @@ impl UserContext {
         cfg_if! {
             if #[cfg(target_arch = "aarch64")] {
                 unimplemented!() // ESR_EL1
+            } else {
+                unimplemented!("raw_trap_reason: unsupported architecture")
             }
         }
     }
@@ -179,6 +183,8 @@ impl UserContext {
                     UserContextField::ThreadPointer => &mut self.0.tpidr,
                     UserContextField::ReturnValue => &mut self.0.general.x0,
                 }
+            } else {
+                unimplemented!("field_ref: unsupported architecture")
             }
         }
     }

@@ -166,19 +166,33 @@ async fn handler_user_trap(
 }
 
 fn syscall_num(ctx: &UserContext) -> usize {
-    ctx.general().x16 as usize
+    cfg_if::cfg_if! {
+        if #[cfg(target_arch = "aarch64")] {
+            ctx.general().x16 as usize
+        } else {
+            let _ = ctx;
+            unimplemented!("syscall_num: unsupported architecture")
+        }
+    }
 }
 
 fn syscall_args(ctx: &UserContext) -> [usize; 8] {
-    let r = ctx.general();
-    [
-        r.x0 as usize,
-        r.x1 as usize,
-        r.x2 as usize,
-        r.x3 as usize,
-        r.x4 as usize,
-        r.x5 as usize,
-        r.x6 as usize,
-        r.x7 as usize,
-    ]
+    cfg_if::cfg_if! {
+        if #[cfg(target_arch = "aarch64")] {
+            let r = ctx.general();
+            [
+                r.x0 as usize,
+                r.x1 as usize,
+                r.x2 as usize,
+                r.x3 as usize,
+                r.x4 as usize,
+                r.x5 as usize,
+                r.x6 as usize,
+                r.x7 as usize,
+            ]
+        } else {
+            let _ = ctx;
+            unimplemented!("syscall_args: unsupported architecture")
+        }
+    }
 }

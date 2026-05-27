@@ -259,6 +259,8 @@ impl Syscall<'_> {
 
             #[cfg(target_arch = "aarch64")]
             _ => self.aarch64_syscall(sys_type, args).await,
+            #[cfg(not(target_arch = "aarch64"))]
+            _ => self.unknown_syscall(sys_type),
         };
         info!("<= {:?}", ret);
         match ret {

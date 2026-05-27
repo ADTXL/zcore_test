@@ -141,6 +141,15 @@ cfg_if::cfg_if! {
             far: u64,
             _padding2: u64,
         }
+    } else {
+        #[repr(C)]
+        #[derive(Debug, Default, Clone)]
+        struct ExceptionContextInner {
+            esr: u32,
+            _padding1: u32,
+            far: u64,
+            _padding2: u64,
+        }
     }
 }
 
@@ -153,6 +162,12 @@ impl ExceptionContext {
         };
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "aarch64")] {
+                Self(ExceptionContextInner {
+                    esr: ctx.raw_trap_reason() as _,
+                    far: fault_vaddr,
+                    ..Default::default()
+                })
+            } else {
                 Self(ExceptionContextInner {
                     esr: ctx.raw_trap_reason() as _,
                     far: fault_vaddr,

@@ -414,3 +414,17 @@ mod tests {
         PayloadRepr::decode(PacketType::PageRequest, &Payload { user: data });
     }
 }
+
+#[cfg(not(target_arch = "aarch64"))]
+#[repr(C)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+pub struct PacketGuestMem {
+    pub addr: u64,
+    pub access_size: u8,
+    pub sign_extend: bool,
+    pub xt: u8,
+    pub read: bool,
+    pub _padding1: [u8; 4],
+    pub data: u64,
+    pub _reserved: u64,
+}
