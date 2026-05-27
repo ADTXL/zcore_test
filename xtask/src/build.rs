@@ -45,7 +45,9 @@ pub(crate) struct QemuArgs {
     /// Firmware to use ATF (比如说用户给了--firmware atf,则就会以atf的bl1。bin作为bios)
     #[clap(long)]
     firmware: Option<String>,
-
+    /// Machine config name (e.g. virt-aarch64-linux for Linux mode)
+    #[clap(long, default_value = None)]
+    machine: Option<String>,
 }
 
 #[derive(Args)]
@@ -183,7 +185,7 @@ impl QemuArgs {
             .join("zcore");
         // 递归生成内核二进制
         let bin = BuildConfig::from_args(BuildArgs {
-            machine: format!("virt-{}", self.arch.arch.name()),
+            machine: self.machine.unwrap_or_else(|| format!("virt-{}", self.arch.arch.name())),
             debug: self.debug,
         })
         .bin(None);

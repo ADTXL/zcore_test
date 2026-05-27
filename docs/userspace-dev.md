@@ -25,10 +25,12 @@ Hello! Welcome to zCore userspace!
 cargo qemu --arch aarch64
 ```
 
-### Linux 模式
+### Linux 模式（需要额外配置）
 ```bash
 cargo qemu --arch aarch64 --machine virt-aarch64-linux
 ```
+
+> ⚠️ Linux 模式当前需要 virtio 块设备提供根文件系统，暂未完整支持。Zircon 模式可正常使用。
 
 两种模式的区别：
 - **Zircon 模式**：`config/machine-features.toml` 中 `virt-aarch64` 配置了 `features=["zircon"]`，加载自定义 shell

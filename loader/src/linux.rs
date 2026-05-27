@@ -212,7 +212,7 @@ async fn handle_user_trap(thread: &CurrentThread, mut ctx: Box<UserContext>) -> 
     }
 }
 
-fn syscall_num(_ctx: &UserContext) -> usize {
+fn syscall_num(ctx: &UserContext) -> usize {
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "aarch64")] {
             ctx.general().x8 as usize
@@ -222,7 +222,7 @@ fn syscall_num(_ctx: &UserContext) -> usize {
     }
 }
 
-fn syscall_args(_ctx: &UserContext) -> [usize; 6] {
+fn syscall_args(ctx: &UserContext) -> [usize; 6] {
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "aarch64")] {
             let regs = ctx.general();
