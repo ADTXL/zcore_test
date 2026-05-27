@@ -20,9 +20,19 @@ Hello! Welcome to zCore userspace!
 
 ## 启动方式
 
+### Zircon 模式（默认，运行自定义 shell）
 ```bash
 cargo qemu --arch aarch64
 ```
+
+### Linux 模式
+```bash
+cargo qemu --arch aarch64 --machine virt-aarch64-linux
+```
+
+两种模式的区别：
+- **Zircon 模式**：`config/machine-features.toml` 中 `virt-aarch64` 配置了 `features=["zircon"]`，加载自定义 shell
+- **Linux 模式**：`virt-aarch64-linux` 没有 zircon feature，自动切换为 Linux syscall 支持
 
 ## 架构
 

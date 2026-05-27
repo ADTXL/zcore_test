@@ -1,3 +1,6 @@
 [qemu.virt-aarch64]
 arch = "aarch64"
 features =["zircon"]
+
+[qemu.virt-aarch64-linux]
+arch = "aarch64"
