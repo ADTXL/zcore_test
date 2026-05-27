@@ -1,51 +1,108 @@
-# zCore
+# zCore (aarch64)
 
-本项目在 [zcore](https://github.com/rcore-os/zCore)项目的基础上进行开发，专注于完善zcore 系统在ARM aarch64架构下的功能完整性。
+基于 Zircon 微内核的 Rust 实现，专注于 aarch64 平台。
 
-当前支持在bare-metal模式下，基于qemu启动aarch64的fuchsia系统
+## 快速开始
 
-关于zcore的介绍请参考[zcore 原版README文档](README-origin.md)
+```bash
+# 克隆仓库
+git clone https://github.com/ADTXL/zcore_test.git
+cd zcore_test
 
-## 项目构建
-
-本项目提供一个docker环境，使用方法参考[docker使用说明](tools/docker/README.md)
-
-- 安装rust
-
-需要在docker环境或者本地开发平台安装rust，安装说明参考[rust组织](https://www.rust-lang.org/)
-
-- 更新依赖
-
-```
-cargo +stable install cargo-binutils
-cargo update-all
+# 编译并运行
+cargo qemu --arch aarch64
 ```
 
+启动后进入交互式 Shell：
 
+```
+============================
+  zCore Shell v0.1
+  Custom userspace on zCore
+============================
 
-## 启动内核
+zcore> help
+Available commands:
+  help        - Show this help
+  hello       - Say hello
+  info        - Show system info
+  echo <text> - Echo text back
+```
 
-如果需要从uefi开始引导启动，默认使用zircon模式，将启动fuchsia系统，命令如下
+## 架构
 
+```
+┌─────────────────────────────────────┐
+│          QEMU aarch64               │
+│  ┌───────────────────────────────┐  │
+│  │    UEFI → rayboot             │  │
+│  │         ↓                     │  │
+│  │    zCore Kernel (Rust)        │  │
+│  │    ├── kernel-hal             │  │
+│  │    ├── zircon-object          │  │
+│  │    ├── zircon-syscall         │  │
+│  │    └── simple_init            │  │
+│  │         ↓ (svc #0)            │  │
+│  │    shell.elf (用户态)          │  │
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+```
+
+## 系统调用
+
+| # | 名称 | 功能 |
+|---|------|------|
+| 8 | nanosleep | 休眠 |
+| 95 | debug_read | 串口读取 |
+| 96 | debug_write | 串口写入 |
+
+## 项目结构
+
+```
+zcore_test/
+├── user/              # 用户态程序 (shell.S, hello.S)
+├── loader/            # ELF 加载器 (simple_init.rs)
+├── zircon-syscall/    # 系统调用实现
+├── zircon-object/     # 内核对象 (Process, Thread, VMAR)
+├── kernel-hal/        # aarch64 硬件抽象层
+├── drivers/           # 设备驱动 (GIC, PL011, virtio)
+├── zCore/             # 内核主体
+├── docs/              # 文档
+└── config/            # 配置文件
+```
+
+## 开发
+
+### 构建用户态程序
+```bash
+cd user && make
+```
+
+### 构建内核
+```bash
+cargo +nightly-2022-08-05 build --package zcore \
+  --no-default-features --features "zircon" \
+  --target zCore/aarch64.json \
+  -Z build-std=core,alloc \
+  -Z build-std-features=compiler-builtins-mem \
+  --release
+```
+
+### 运行
 ```bash
 cargo qemu --arch aarch64
 ```
-启动准备工作流程图如下，更详细的信息可见docs（TODO）
-![](./docs/zcore_aarch64_prepare.png)
 
+## 文档
 
-使用下面的命令可以从ATF开始启动
+- [用户态开发文档](docs/userspace-dev.md)
 
-```bash
-cargo qemu --arch aarch64 --firmware atf
-```
+## 平台支持
 
-成功启动将进入到console
+- ✅ aarch64 (AArch64)
+- ❌ x86_64 (已移除)
+- ❌ riscv64 (已移除)
 
-![](./docs/img/fuchsia_console.png)
+## 许可证
 
-
-
-## 注意事项
-
-- 如果是第一次使用并想启用ATF，但遇到“BUFFER TOO SMALL”错误，需要用“useful_tools”里的新“bootaa64.efi”替换旧文件，旧文件路径在“zCore/disk/Boot/EFI/bootaa64.efi”
+MIT License
