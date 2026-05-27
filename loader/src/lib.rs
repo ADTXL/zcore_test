@@ -17,12 +17,5 @@ cfg_if! {
     }
 }
 
-cfg_if! {
-    if #[cfg(any(feature = "zircon", doc))] {
-        #[doc(cfg(feature = "zircon"))]
-        pub mod zircon;
-    }
-}
-
 /// Simple init process loader for custom userspace programs.
 pub mod simple_init;

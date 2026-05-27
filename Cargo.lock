@@ -2407,15 +2407,12 @@ dependencies = [
 name = "zcore-loader"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "cfg-if 1.0.0",
- "env_logger",
  "executor",
  "kernel-hal",
  "linux-object",
  "linux-syscall",
  "log",
- "rcore-fs-hostfs",
  "xmas-elf",
  "zircon-object",
  "zircon-syscall",

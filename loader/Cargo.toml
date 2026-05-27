@@ -8,8 +8,6 @@ authors = [
 edition = "2018"
 description = "Linux and Zircon user programs loader and runner."
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 log = "0.4"
 cfg-if = "1.0"
@@ -26,16 +24,3 @@ default = ["libos", "linux", "zircon"]
 linux = ["linux-object", "linux-syscall"]
 zircon = ["zircon-syscall", "xmas-elf"]
 libos = ["kernel-hal/libos", "zircon-object/aspace-separate"]
-
-[dev-dependencies]
-env_logger = "0.9"
-async-std = { version = "1.10", features = ["attributes"] }
-rcore-fs-hostfs = { git = "https://github.com/rcore-os/rcore-fs", rev = "1a3246b" }
-
-[[example]]
-name = "linux-libos"
-required-features = ["linux", "libos"]
-
-[[example]]
-name = "zircon-libos"
-required-features = ["zircon", "libos"]
